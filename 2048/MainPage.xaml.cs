@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using Windows.Globalization.DateTimeFormatting;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -14,6 +14,113 @@ using Windows.UI.Xaml.Media.Animation;
 
 namespace _2048
 {
+    class Cell
+    {
+        public int Value { get; set; }
+        public bool WasDoubled { get; set; }
+        public bool WasCreated { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+
+        public GameTile GameTile { get; set; }
+        public Tuple<int, int> MovedFrom { get; set; }
+
+        public Cell(int X, int Y)
+        {
+            this.X = X;
+            this.Y = Y;
+            this.Value = 0;
+        }
+
+        public bool IsEmpty()
+        {
+            return Value == 0;
+        }
+
+        public void UpdateUI(Canvas GameGrid)
+        {
+            if (GameTile != null)
+            {
+                GameGrid.Children.Remove(GameTile);
+            }
+
+            if (Value == 0)
+            {
+                return;
+            }
+
+
+            this.GameTile = new GameTile(true);
+            this.GameTile.Width = 150;
+            this.GameTile.Height = 150;
+            GameGrid.Children.Add(this.GameTile);
+            this.GameTile.SetValue(Canvas.ZIndexProperty, 1);
+            
+            if (MovedFrom != null)
+            {
+                //this.GameTile.SetValue(Canvas.LeftProperty, X * 150);
+                //this.GameTile.SetValue(Canvas.TopProperty, Y * 150);
+                BeginMovedTileAnimation();
+            }
+            else
+            {
+                this.GameTile.SetValue(Canvas.LeftProperty, X * 150);
+                this.GameTile.SetValue(Canvas.TopProperty, Y * 150);
+            }
+
+            this.GameTile.Value = Value;
+            
+            if (WasCreated)
+            {
+                GameTile.BeginNewTileAnimation();
+            }
+
+            if (WasDoubled)
+            {
+                GameTile.BeginDoubledAnimation();
+            }
+            
+            WasCreated = false;
+            WasDoubled = false;
+            MovedFrom = null;
+        }
+
+        public void BeginMovedTileAnimation()
+        {
+            var xAnimation = new DoubleAnimation();
+            xAnimation.EnableDependentAnimation = true;
+            xAnimation.From = MovedFrom.Item1 * 150;
+            xAnimation.To = X * 150;
+            xAnimation.Duration = new Duration(new TimeSpan(1200000));
+
+            var yAnimation = new DoubleAnimation();
+            yAnimation.EnableDependentAnimation = true;
+            yAnimation.From = MovedFrom.Item2 * 150;
+            yAnimation.To = Y * 150;
+            yAnimation.Duration = new Duration(new TimeSpan(1200000));
+
+            if (yAnimation.From != yAnimation.To && xAnimation.From != xAnimation.To)
+            {
+                //Debugger.Break();
+            }
+
+            Storyboard.SetTarget(xAnimation, GameTile);
+            Storyboard.SetTargetProperty(xAnimation, "(Canvas.Left)");
+
+            //((TransformGroup)RenderTransform).Children
+
+            Storyboard.SetTarget(yAnimation, GameTile);
+            Storyboard.SetTargetProperty(yAnimation, "(Canvas.Top)");
+
+            var storyboard = new Storyboard();
+            storyboard.Children.Add(xAnimation);
+            storyboard.Children.Add(yAnimation);
+            storyboard.Begin();
+        }
+    }
+
+
+
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -22,45 +129,140 @@ namespace _2048
         private const int _ROWS = 4;
         private const int _COLS = 4;
 
-        private GameTile[][] _tiles;
+        private Cell[][] _cells;
 
         public MainPage()
         {
             this.InitializeComponent();
+            
+            for (int y = 0; y < _ROWS; ++y)
+            {
+                for (int x = 0; x < _COLS; ++x)
+                {
+                    var tile = new GameTile();
+                    tile.Width = 150;
+                    tile.Height = 150;
+                    tile.SetValue(Canvas.LeftProperty, x * 150);
+                    tile.SetValue(Canvas.TopProperty, y * 150);
+                    tile.SetValue(Canvas.ZIndexProperty, 0);
+                    GameGrid.Children.Add(tile);
+                }
+            }
 
-            _tiles = new GameTile[_COLS][];
+            _cells = new Cell[_COLS][];
             for (int i = 0; i < _COLS; ++i)
             {
-                _tiles[i] = new GameTile[_ROWS];
+                _cells[i] = new Cell[_ROWS];
             }
 
             for (int y = 0; y < _ROWS; ++y)
             {
                 for (int x = 0; x < _COLS; ++x)
                 {
-                    _tiles[x][y] = new GameTile();
-                    _tiles[x][y].Width = 150;
-                    _tiles[x][y].Height = 150;
-                    _tiles[x][y].SetValue(Canvas.LeftProperty, x * 150);
-                    _tiles[x][y].SetValue(Canvas.TopProperty, y * 150);
-                    GameGrid.Children.Add(_tiles[x][y]);
+                    _cells[x][y] = new Cell(x, y);
                 }
             }
 
             StartGame();
         }
 
-        private void StartGame()
+        private void LoadMap()
         {
-            var first = GetRandomEmptyTile();
-            _tiles[first.Item1][first.Item2].Value = GetRandomStartingNumber();
-
-            var second = GetRandomEmptyTile();
-            _tiles[second.Item1][second.Item2].Value = GetRandomStartingNumber();
-
-            Window.Current.CoreWindow.KeyDown += OnKeyDown;
+            _cells[2][1] = new Cell(2, 1) { Value = 8 };
+            _cells[2][2] = new Cell(2, 2) { Value = 4 };
+            _cells[2][3] = new Cell(2, 3) { Value = 4 };
+            _cells[3][2] = new Cell(3, 2) { Value = 8 };
+            _cells[3][3] = new Cell(3, 3) { Value = 2 };
         }
 
+        private void StartGame()
+        {
+            LoadMap();
+
+            /*var first = new Tuple<int, int>(0, 0);//GetRandomEmptyTile();
+            _cells[first.Item1][first.Item2].Value = GetRandomStartingNumber();
+            _cells[first.Item1][first.Item2].WasCreated = true;
+
+            /*var second = GetRandomEmptyTile();
+            _cells[second.Item1][second.Item2].Value = GetRandomStartingNumber();
+            _cells[second.Item1][second.Item2].WasCreated = true;*/
+
+            UpdateUI();
+
+            Window.Current.CoreWindow.KeyDown += OnKeyDown;
+            this.ManipulationStarted += OnManipulationStarted;
+            this.ManipulationDelta += OnManipulationDelta;
+            this.ManipulationMode = ManipulationModes.All;
+        }
+
+        private void OnManipulationDelta(object Sender, ManipulationDeltaRoutedEventArgs DeltaRoutedEventArgs)
+        {
+            if (DeltaRoutedEventArgs.IsInertial)
+            {
+                if (startPoint.X - DeltaRoutedEventArgs.Position.X > 200)
+                {
+                    HandleMove(VirtualKey.Left);
+                    DeltaRoutedEventArgs.Complete();
+                    DeltaRoutedEventArgs.Handled = true;
+                }
+                else if (DeltaRoutedEventArgs.Position.X - startPoint.X > 200)
+                {
+                    HandleMove(VirtualKey.Right);
+                    DeltaRoutedEventArgs.Complete();
+                    DeltaRoutedEventArgs.Handled = true;
+                }
+                else if (startPoint.Y - DeltaRoutedEventArgs.Position.Y > 200)
+                {
+                    HandleMove(VirtualKey.Up);
+                    DeltaRoutedEventArgs.Complete();
+                    DeltaRoutedEventArgs.Handled = true;
+                }
+                else if (DeltaRoutedEventArgs.Position.Y - startPoint.Y > 200)
+                {
+                    HandleMove(VirtualKey.Down);
+                    DeltaRoutedEventArgs.Complete();
+                    DeltaRoutedEventArgs.Handled = true;
+                }
+            }
+        }
+
+        private Point startPoint;
+
+        private void OnManipulationStarted(object Sender, ManipulationStartedRoutedEventArgs StartedRoutedEventArgs)
+        {
+            startPoint = StartedRoutedEventArgs.Position;
+        }
+
+
+        private void UpdateUI()
+        {
+            // Update tile map
+            //for (var y = 0; y < _ROWS; ++y)
+            //{
+            //    for (var x = 0; x < _COLS; ++x)
+            //    {
+            //        var p = _cells[x][y].MovedFrom;
+            //        if (p != null)
+            //        {
+            //            if (_cells[x][y].GameTile != null)
+            //            {
+            //                //GameGrid.Children.Remove(_cells[x][y].GameTile);
+            //            }
+            //            _cells[x][y].GameTile = _cells[p.Item1][p.Item2].GameTile;
+            //            _cells[p.Item1][p.Item2].GameTile = null;
+            //        }
+            //    }
+            //}
+
+            for (var y = 0; y < _ROWS; ++y)
+            {
+                for (var x = 0; x < _COLS; ++x)
+                {
+                    _cells[x][y].UpdateUI(GameGrid);
+                }
+            }
+        }
+        
         private void OnKeyDown(CoreWindow Sender, KeyEventArgs Args)
         {
             if (Args.VirtualKey != VirtualKey.Up && Args.VirtualKey != VirtualKey.Down && Args.VirtualKey != VirtualKey.Left && Args.VirtualKey != VirtualKey.Right)
@@ -68,41 +270,32 @@ namespace _2048
                 return;
             }
 
-            moves.Clear();
-            if (PackTiles(Args.VirtualKey) | MergeTiles(Args.VirtualKey))
+            HandleMove(Args.VirtualKey);
+        }
+
+        private void HandleMove(VirtualKey Key)
+        {
+            if (PackTiles(Key) | MergeTiles(Key))
             {
-                foreach (var move in moves)
-                {
-                    //_tiles[move.Item1.Item1][move.Item1.Item1].MoveTo(move.Item2.Item1, move.Item2.Item2);
-                }
-
-                for (var y = 0; y < _ROWS; ++y)
-                {
-                    for (var x = 0; x < _COLS; ++x)
-                    {
-                        if (_tiles[x][y].WasDoubled)
-                        {
-                            _tiles[x][y].WasDoubled = false;
-                            _tiles[x][y].BeginDoubledAnimation();
-                        }
-                    }
-                }
-
                 var newTile = GetRandomEmptyTile();
 
                 if (newTile != null)
                 {
-                    _tiles[newTile.Item1][newTile.Item2].Value = GetRandomStartingNumber();
-                    _tiles[newTile.Item1][newTile.Item2].BeginNewTileAnimation();
+                    _cells[newTile.Item1][newTile.Item2].Value = GetRandomStartingNumber();
+                    if (_cells[newTile.Item1][newTile.Item2].MovedFrom != null)
+                    {
+                        Debugger.Break();
+                    }
+                    _cells[newTile.Item1][newTile.Item2].WasCreated = true;
                 }
                 else
                 {
                     // Game over?
                 }
+
+                UpdateUI();
             }
         }
-
-        private List<Tuple<Tuple<int, int>, Tuple<int, int>>> moves = new List<Tuple<Tuple<int, int>, Tuple<int, int>>>(); 
 
         private bool PackTiles(VirtualKey MoveDirection)
         {
@@ -113,7 +306,7 @@ namespace _2048
                 {
                     var lastEmptyY = 0;
 
-                    while (lastEmptyY < _ROWS && _tiles[x][lastEmptyY].Value != 0)
+                    while (lastEmptyY < _ROWS && !_cells[x][lastEmptyY].IsEmpty())
                     {
                         ++lastEmptyY;
                     }
@@ -121,12 +314,13 @@ namespace _2048
                     var currentY = lastEmptyY + 1;
                     while (currentY < _ROWS)
                     {
-                        if (_tiles[x][currentY].Value > 0)
+                        if (!_cells[x][currentY].IsEmpty())
                         {
                             changed = true;
-                            moves.Add(new Tuple<Tuple<int, int>, Tuple<int, int>>(new Tuple<int, int>(x, currentY), new Tuple<int, int>(x, lastEmptyY)));
-                            _tiles[x][lastEmptyY].Value = _tiles[x][currentY].Value;
-                            _tiles[x][currentY].Value = 0;
+                            _cells[x][lastEmptyY].Value = _cells[x][currentY].Value;
+                            _cells[x][lastEmptyY].MovedFrom = _cells[x][currentY].MovedFrom ?? new Tuple<int, int>(x, currentY);
+                            _cells[x][currentY].Value = 0;
+                            _cells[x][currentY].MovedFrom = null;
                             ++lastEmptyY;
                         }
                         ++currentY;
@@ -139,7 +333,7 @@ namespace _2048
                 {
                     var lastEmptyY = _ROWS - 1;
 
-                    while (lastEmptyY >= 0 && _tiles[x][lastEmptyY].Value != 0)
+                    while (lastEmptyY >= 0 && !_cells[x][lastEmptyY].IsEmpty())
                     {
                         --lastEmptyY;
                     }
@@ -147,11 +341,13 @@ namespace _2048
                     var currentY = lastEmptyY - 1;
                     while (currentY >= 0)
                     {
-                        if (_tiles[x][currentY].Value > 0)
+                        if (!_cells[x][currentY].IsEmpty())
                         {
                             changed = true;
-                            _tiles[x][lastEmptyY].Value = _tiles[x][currentY].Value;
-                            _tiles[x][currentY].Value = 0;
+                            _cells[x][lastEmptyY].Value = _cells[x][currentY].Value;
+                            _cells[x][lastEmptyY].MovedFrom = _cells[x][currentY].MovedFrom ?? new Tuple<int, int>(x, currentY);
+                            _cells[x][currentY].Value = 0;
+                            _cells[x][currentY].MovedFrom = null;
                             --lastEmptyY;
                         }
                         --currentY;
@@ -164,7 +360,7 @@ namespace _2048
                 {
                     var lastEmptyX = 0;
 
-                    while (lastEmptyX < _COLS && _tiles[lastEmptyX][y].Value != 0)
+                    while (lastEmptyX < _COLS && !_cells[lastEmptyX][y].IsEmpty())
                     {
                         ++lastEmptyX;
                     }
@@ -172,11 +368,13 @@ namespace _2048
                     var currentX = lastEmptyX + 1;
                     while (currentX < _COLS)
                     {
-                        if (_tiles[currentX][y].Value > 0)
+                        if (_cells[currentX][y].Value > 0)
                         {
                             changed = true;
-                            _tiles[lastEmptyX][y].Value = _tiles[currentX][y].Value;
-                            _tiles[currentX][y].Value = 0;
+                            _cells[lastEmptyX][y].Value = _cells[currentX][y].Value;
+                            _cells[lastEmptyX][y].MovedFrom = _cells[currentX][y].MovedFrom ?? new Tuple<int, int>(currentX, y);
+                            _cells[currentX][y].Value = 0;
+                            _cells[currentX][y].MovedFrom = null;
                             ++lastEmptyX;
                         }
                         ++currentX;
@@ -190,7 +388,7 @@ namespace _2048
                 {
                     var lastEmptyX = _COLS - 1;
 
-                    while (lastEmptyX >= 0 && _tiles[lastEmptyX][y].Value != 0)
+                    while (lastEmptyX >= 0 && !_cells[lastEmptyX][y].IsEmpty())
                     {
                         --lastEmptyX;
                     }
@@ -198,11 +396,13 @@ namespace _2048
                     var currentX = lastEmptyX - 1;
                     while (currentX >= 0)
                     {
-                        if (_tiles[currentX][y].Value > 0)
+                        if (_cells[currentX][y].Value > 0)
                         {
                             changed = true;
-                            _tiles[lastEmptyX][y].Value = _tiles[currentX][y].Value;
-                            _tiles[currentX][y].Value = 0;
+                            _cells[lastEmptyX][y].Value = _cells[currentX][y].Value;
+                            _cells[lastEmptyX][y].MovedFrom = _cells[currentX][y].MovedFrom ?? new Tuple<int, int>(currentX, y);
+                            _cells[currentX][y].Value = 0;
+                            _cells[currentX][y].MovedFrom = null;
                             --lastEmptyX;
                         }
                         --currentX;
@@ -219,14 +419,15 @@ namespace _2048
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    for (var y = 0; y < _ROWS - 1 && _tiles[x][y].Value > 0; ++y)
+                    for (var y = 0; y < _ROWS - 1 && _cells[x][y].Value > 0; ++y)
                     {
-                        if (_tiles[x][y].Value == _tiles[x][y + 1].Value)
+                        if (_cells[x][y].Value == _cells[x][y + 1].Value)
                         {
                             changed = true;
-                            _tiles[x][y].Value *= 2;
-                            _tiles[x][y].WasDoubled = true;
-                            _tiles[x][y + 1].Value = 0;
+                            _cells[x][y].Value *= 2;
+                            _cells[x][y].WasDoubled = true;
+                            _cells[x][y].MovedFrom = _cells[x][y + 1].MovedFrom ?? new Tuple<int, int>(x, y + 1);
+                            _cells[x][y + 1].MovedFrom = null;
                             PackTiles(MoveDirection);
                         }
                     }
@@ -236,14 +437,16 @@ namespace _2048
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    for (var y = _ROWS - 1; y >= 1 && _tiles[x][y].Value > 0; --y)
+                    for (var y = _ROWS - 1; y >= 1 && _cells[x][y].Value > 0; --y)
                     {
-                        if (_tiles[x][y].Value == _tiles[x][y - 1].Value)
+                        if (_cells[x][y].Value == _cells[x][y - 1].Value)
                         {
                             changed = true;
-                            _tiles[x][y].Value *= 2;
-                            _tiles[x][y].WasDoubled = true;
-                            _tiles[x][y - 1].Value = 0;
+                            _cells[x][y].Value *= 2;
+                            _cells[x][y].WasDoubled = true;
+                            _cells[x][y].MovedFrom = _cells[x][y - 1].MovedFrom ?? new Tuple<int, int>(x, y - 1);
+                            _cells[x][y - 1].Value = 0;
+                            _cells[x][y - 1].MovedFrom = null;
                             PackTiles(MoveDirection);
                         }
                     }
@@ -253,14 +456,16 @@ namespace _2048
             {
                 for (var y = 0; y < _ROWS; ++y)
                 {
-                    for (var x = 0; x < _COLS - 1 && _tiles[x][y].Value > 0; ++x)
+                    for (var x = 0; x < _COLS - 1 && _cells[x][y].Value > 0; ++x)
                     {
-                        if (_tiles[x][y].Value == _tiles[x + 1][y].Value)
+                        if (_cells[x][y].Value == _cells[x + 1][y].Value)
                         {
                             changed = true;
-                            _tiles[x][y].Value *= 2;
-                            _tiles[x][y].WasDoubled = true;
-                            _tiles[x + 1][y].Value = 0;
+                            _cells[x][y].Value *= 2;
+                            _cells[x][y].WasDoubled = true;
+                            _cells[x][y].MovedFrom = _cells[x + 1][y].MovedFrom ?? new Tuple<int, int>(x + 1, y);
+                            _cells[x + 1][y].Value = 0;
+                            _cells[x + 1][y].MovedFrom = null;
                             PackTiles(MoveDirection);
                         }
                     }
@@ -270,14 +475,16 @@ namespace _2048
             {
                 for (var y = 0; y < _ROWS; ++y)
                 {
-                    for (var x = _COLS - 1; x >= 1 && _tiles[x][y].Value > 0; --x)
+                    for (var x = _COLS - 1; x >= 1 && _cells[x][y].Value > 0; --x)
                     {
-                        if (_tiles[x][y].Value == _tiles[x - 1][y].Value)
+                        if (_cells[x][y].Value == _cells[x - 1][y].Value)
                         {
                             changed = true;
-                            _tiles[x][y].Value *= 2;
-                            _tiles[x][y].WasDoubled = true;
-                            _tiles[x - 1][y].Value = 0;
+                            _cells[x][y].Value *= 2;
+                            _cells[x][y].WasDoubled = true;
+                            _cells[x][y].MovedFrom = _cells[x - 1][y].MovedFrom ?? new Tuple<int, int>(x - 1, y);
+                            _cells[x - 1][y].Value = 0;
+                            _cells[x - 1][y].MovedFrom = null;
                             PackTiles(MoveDirection);
                         }
                     }
@@ -295,7 +502,7 @@ namespace _2048
             {
                 for (int x = 0; x < _COLS; ++x)
                 {
-                    if (_tiles[x][y].Value == 0)
+                    if (_cells[x][y].IsEmpty())
                     {
                         emptyIndices.Add(new Tuple<int, int>(x,y));
                     }

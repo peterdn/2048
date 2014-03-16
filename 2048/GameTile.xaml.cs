@@ -5,6 +5,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 
@@ -66,7 +67,7 @@ namespace _2048
 
         private readonly TextBlock _textBlock;
 
-        public GameTile()
+        public GameTile(bool TransparentBorder = false)
         {
             this.InitializeComponent();
 
@@ -77,6 +78,11 @@ namespace _2048
             _textBlock.TextAlignment = TextAlignment.Center;
             _textBlock.VerticalAlignment = VerticalAlignment.Center;
             TileBorder.Child = _textBlock;
+
+            if (TransparentBorder)
+            {
+                ContentBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
+            }
         }
 
         public void BeginNewTileAnimation()
