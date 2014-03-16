@@ -95,11 +95,13 @@ namespace _2048
 
             Storyboard.SetTarget(scaleXAnimation, TileBorder);
             Storyboard.SetTargetName(scaleXAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleXAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
+            Storyboard.SetTargetProperty(scaleXAnimation, "(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)");
+
+            //((TransformGroup)RenderTransform).Children
 
             Storyboard.SetTarget(scaleYAnimation, TileBorder);
             Storyboard.SetTargetName(scaleYAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleYAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
+            Storyboard.SetTargetProperty(scaleYAnimation, "(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)");
 
             var storyboard = new Storyboard();
             storyboard.Children.Add(scaleXAnimation);
@@ -125,15 +127,45 @@ namespace _2048
 
             Storyboard.SetTarget(scaleXAnimation, TileBorder);
             Storyboard.SetTargetName(scaleXAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleXAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleX)");
+            Storyboard.SetTargetProperty(scaleXAnimation, "(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)");
 
             Storyboard.SetTarget(scaleYAnimation, TileBorder);
             Storyboard.SetTargetName(scaleYAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleYAnimation, "(UIElement.RenderTransform).(ScaleTransform.ScaleY)");
+            Storyboard.SetTargetProperty(scaleYAnimation, "(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)");
 
             var storyboard = new Storyboard();
             storyboard.Children.Add(scaleXAnimation);
             storyboard.Children.Add(scaleYAnimation);
+            storyboard.Begin();
+        }
+
+        public void MoveTo(int Item1, int Item2)
+        {
+            var xAnimation = new DoubleAnimation();
+            xAnimation.EnableDependentAnimation = true;
+            xAnimation.From = 0;
+            xAnimation.To = 0;
+            xAnimation.Duration = new Duration(new TimeSpan(8200000));
+            xAnimation.AutoReverse = true;
+
+            var yAnimation = new DoubleAnimation();
+            yAnimation.EnableDependentAnimation = true;
+            yAnimation.From = 0;
+            yAnimation.To = 500;
+            yAnimation.Duration = new Duration(new TimeSpan(8200000));
+            yAnimation.AutoReverse = true;
+
+            Storyboard.SetTarget(xAnimation, TileBorder);
+
+            Storyboard.SetTargetProperty(xAnimation, "(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.X)");
+
+            Storyboard.SetTarget(yAnimation, TileBorder);
+            Storyboard.SetTargetName(yAnimation, "AnimatedScaleTransform");
+            Storyboard.SetTargetProperty(yAnimation, "(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)");
+
+            var storyboard = new Storyboard();
+            storyboard.Children.Add(xAnimation);
+            storyboard.Children.Add(yAnimation);
             storyboard.Begin();
         }
     }

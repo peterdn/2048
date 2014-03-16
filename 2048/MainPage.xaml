@@ -15,21 +15,8 @@
     
     <Grid Background="#faf8ef">
         <Border BorderThickness="10,10,10,10" BorderBrush="#776e65" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="5">
-            <Grid Background="#776e65" Width="600" Height="600" Name="GameGrid">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-            </Grid>
+            <Canvas Background="#776e65" Width="600" Height="600" Name="GameGrid">
+            </Canvas>
         </Border>
     </Grid>
 </Page>

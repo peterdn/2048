@@ -28,18 +28,6 @@ namespace _2048
         {
             this.InitializeComponent();
 
-            GameGrid.ColumnDefinitions.Clear();
-            for (int i = 0; i < _COLS; ++i)
-            {
-                GameGrid.ColumnDefinitions.Add(new ColumnDefinition());
-            }
-
-            GameGrid.RowDefinitions.Clear();
-            for (int i = 0; i < _ROWS; ++i)
-            {
-                GameGrid.RowDefinitions.Add(new RowDefinition());
-            }
-
             _tiles = new GameTile[_COLS][];
             for (int i = 0; i < _COLS; ++i)
             {
@@ -51,8 +39,10 @@ namespace _2048
                 for (int x = 0; x < _COLS; ++x)
                 {
                     _tiles[x][y] = new GameTile();
-                    _tiles[x][y].SetValue(Grid.ColumnProperty, x);
-                    _tiles[x][y].SetValue(Grid.RowProperty, y);
+                    _tiles[x][y].Width = 150;
+                    _tiles[x][y].Height = 150;
+                    _tiles[x][y].SetValue(Canvas.LeftProperty, x * 150);
+                    _tiles[x][y].SetValue(Canvas.TopProperty, y * 150);
                     GameGrid.Children.Add(_tiles[x][y]);
                 }
             }
@@ -78,8 +68,14 @@ namespace _2048
                 return;
             }
 
+            moves.Clear();
             if (PackTiles(Args.VirtualKey) | MergeTiles(Args.VirtualKey))
             {
+                foreach (var move in moves)
+                {
+                    //_tiles[move.Item1.Item1][move.Item1.Item1].MoveTo(move.Item2.Item1, move.Item2.Item2);
+                }
+
                 for (var y = 0; y < _ROWS; ++y)
                 {
                     for (var x = 0; x < _COLS; ++x)
@@ -106,7 +102,7 @@ namespace _2048
             }
         }
 
-        private List<Tuple<Tuple<int, int>, Tuple<int, int>>> moves; 
+        private List<Tuple<Tuple<int, int>, Tuple<int, int>>> moves = new List<Tuple<Tuple<int, int>, Tuple<int, int>>>(); 
 
         private bool PackTiles(VirtualKey MoveDirection)
         {
@@ -128,6 +124,7 @@ namespace _2048
                         if (_tiles[x][currentY].Value > 0)
                         {
                             changed = true;
+                            moves.Add(new Tuple<Tuple<int, int>, Tuple<int, int>>(new Tuple<int, int>(x, currentY), new Tuple<int, int>(x, lastEmptyY)));
                             _tiles[x][lastEmptyY].Value = _tiles[x][currentY].Value;
                             _tiles[x][currentY].Value = 0;
                             ++lastEmptyY;

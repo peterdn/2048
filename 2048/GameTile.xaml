@@ -12,7 +12,10 @@
     <Border Background="#bbadb0" BorderThickness="8,8,8,8" BorderBrush="#776e65" CornerRadius="6" Name="ContentBorder">
         <Border Name="TileBorder" BorderThickness="0" RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
-                <ScaleTransform x:Name="AnimatedScaleTransform" ScaleX="1" ScaleY="1" />
+                <TransformGroup>
+                    <ScaleTransform x:Name="AnimatedScaleTransform" ScaleX="1" ScaleY="1" />
+                    <TranslateTransform x:Name="AnimatedTranslateTransform" X="0" Y="0" />
+                </TransformGroup>
             </Border.RenderTransform>
         </Border>
     </Border>
