@@ -6,6 +6,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    
+    <Page.Resources>
+        <Storyboard x:Key="storyboard">
+            
+        </Storyboard>
+    </Page.Resources>
+    
     <Grid Background="#faf8ef">
         <Border BorderThickness="10,10,10,10" BorderBrush="#776e65" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="5">
             <Grid Background="#776e65" Width="600" Height="600" Name="GameGrid">

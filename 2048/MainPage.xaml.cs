@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Windows.Globalization.DateTimeFormatting;
 using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
@@ -8,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media.Animation;
 
 namespace _2048
 {
@@ -75,15 +78,39 @@ namespace _2048
                 return;
             }
 
-            PackTiles(Args.VirtualKey);
-            MergeTiles(Args.VirtualKey);
-            
-            var newTile = GetRandomEmptyTile();
-            _tiles[newTile.Item1][newTile.Item2].Value = GetRandomStartingNumber();
+            if (PackTiles(Args.VirtualKey) | MergeTiles(Args.VirtualKey))
+            {
+                for (var y = 0; y < _ROWS; ++y)
+                {
+                    for (var x = 0; x < _COLS; ++x)
+                    {
+                        if (_tiles[x][y].WasDoubled)
+                        {
+                            _tiles[x][y].WasDoubled = false;
+                            _tiles[x][y].BeginDoubledAnimation();
+                        }
+                    }
+                }
+
+                var newTile = GetRandomEmptyTile();
+
+                if (newTile != null)
+                {
+                    _tiles[newTile.Item1][newTile.Item2].Value = GetRandomStartingNumber();
+                    _tiles[newTile.Item1][newTile.Item2].BeginNewTileAnimation();
+                }
+                else
+                {
+                    // Game over?
+                }
+            }
         }
 
-        private void PackTiles(VirtualKey MoveDirection)
+        private List<Tuple<Tuple<int, int>, Tuple<int, int>>> moves; 
+
+        private bool PackTiles(VirtualKey MoveDirection)
         {
+            var changed = false;
             if (MoveDirection == VirtualKey.Up)
             {
                 for (var x = 0; x < _COLS; ++x)
@@ -100,6 +127,7 @@ namespace _2048
                     {
                         if (_tiles[x][currentY].Value > 0)
                         {
+                            changed = true;
                             _tiles[x][lastEmptyY].Value = _tiles[x][currentY].Value;
                             _tiles[x][currentY].Value = 0;
                             ++lastEmptyY;
@@ -124,6 +152,7 @@ namespace _2048
                     {
                         if (_tiles[x][currentY].Value > 0)
                         {
+                            changed = true;
                             _tiles[x][lastEmptyY].Value = _tiles[x][currentY].Value;
                             _tiles[x][currentY].Value = 0;
                             --lastEmptyY;
@@ -148,6 +177,7 @@ namespace _2048
                     {
                         if (_tiles[currentX][y].Value > 0)
                         {
+                            changed = true;
                             _tiles[lastEmptyX][y].Value = _tiles[currentX][y].Value;
                             _tiles[currentX][y].Value = 0;
                             ++lastEmptyX;
@@ -173,6 +203,7 @@ namespace _2048
                     {
                         if (_tiles[currentX][y].Value > 0)
                         {
+                            changed = true;
                             _tiles[lastEmptyX][y].Value = _tiles[currentX][y].Value;
                             _tiles[currentX][y].Value = 0;
                             --lastEmptyX;
@@ -181,19 +212,23 @@ namespace _2048
                     }
                 }
             }
+            return changed;
         }
 
-        private void MergeTiles(VirtualKey MoveDirection)
+        private bool MergeTiles(VirtualKey MoveDirection)
         {
+            var changed = false;
             if (MoveDirection == VirtualKey.Up)
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    for (var y = 0; y < _ROWS - 1; ++y)
+                    for (var y = 0; y < _ROWS - 1 && _tiles[x][y].Value > 0; ++y)
                     {
                         if (_tiles[x][y].Value == _tiles[x][y + 1].Value)
                         {
+                            changed = true;
                             _tiles[x][y].Value *= 2;
+                            _tiles[x][y].WasDoubled = true;
                             _tiles[x][y + 1].Value = 0;
                             PackTiles(MoveDirection);
                         }
@@ -204,11 +239,13 @@ namespace _2048
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    for (var y = _ROWS - 1; y >= 1; --y)
+                    for (var y = _ROWS - 1; y >= 1 && _tiles[x][y].Value > 0; --y)
                     {
                         if (_tiles[x][y].Value == _tiles[x][y - 1].Value)
                         {
+                            changed = true;
                             _tiles[x][y].Value *= 2;
+                            _tiles[x][y].WasDoubled = true;
                             _tiles[x][y - 1].Value = 0;
                             PackTiles(MoveDirection);
                         }
@@ -219,11 +256,13 @@ namespace _2048
             {
                 for (var y = 0; y < _ROWS; ++y)
                 {
-                    for (var x = 0; x < _COLS - 1; ++x)
+                    for (var x = 0; x < _COLS - 1 && _tiles[x][y].Value > 0; ++x)
                     {
                         if (_tiles[x][y].Value == _tiles[x + 1][y].Value)
                         {
+                            changed = true;
                             _tiles[x][y].Value *= 2;
+                            _tiles[x][y].WasDoubled = true;
                             _tiles[x + 1][y].Value = 0;
                             PackTiles(MoveDirection);
                         }
@@ -234,17 +273,21 @@ namespace _2048
             {
                 for (var y = 0; y < _ROWS; ++y)
                 {
-                    for (var x = 0; x >= 1; --x)
+                    for (var x = _COLS - 1; x >= 1 && _tiles[x][y].Value > 0; --x)
                     {
                         if (_tiles[x][y].Value == _tiles[x - 1][y].Value)
                         {
+                            changed = true;
                             _tiles[x][y].Value *= 2;
+                            _tiles[x][y].WasDoubled = true;
                             _tiles[x - 1][y].Value = 0;
                             PackTiles(MoveDirection);
                         }
                     }
                 }
             }
+
+            return changed;
         }
 
         private Random rnd = new Random();
@@ -260,6 +303,11 @@ namespace _2048
                         emptyIndices.Add(new Tuple<int, int>(x,y));
                     }
                 }
+            }
+
+            if (emptyIndices.Count == 0)
+            {
+                return null;
             }
 
             var next = rnd.Next(0, emptyIndices.Count - 1);
