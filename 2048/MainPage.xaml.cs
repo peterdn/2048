@@ -90,13 +90,13 @@ namespace _2048
             xAnimation.EnableDependentAnimation = true;
             xAnimation.From = MovedFrom.Item1 * 150;
             xAnimation.To = X * 150;
-            xAnimation.Duration = new Duration(new TimeSpan(1200000));
+            xAnimation.Duration = new Duration(new TimeSpan(12000000));
 
             var yAnimation = new DoubleAnimation();
             yAnimation.EnableDependentAnimation = true;
             yAnimation.From = MovedFrom.Item2 * 150;
             yAnimation.To = Y * 150;
-            yAnimation.Duration = new Duration(new TimeSpan(1200000));
+            yAnimation.Duration = new Duration(new TimeSpan(12000000));
             
             Storyboard.SetTarget(xAnimation, GameTile);
             Storyboard.SetTargetProperty(xAnimation, "(Canvas.Left)");
@@ -192,7 +192,7 @@ namespace _2048
             _cells[second.Item1][second.Item2].Value = GetRandomStartingNumber();
             _cells[second.Item1][second.Item2].WasCreated = true;*/
 
-            UpdateUI();
+            UpdateUI(true);
 
             Window.Current.CoreWindow.KeyDown += OnKeyDown;
             this.ManipulationStarted += OnManipulationStarted;
@@ -239,7 +239,7 @@ namespace _2048
         }
 
 
-        private void UpdateUI()
+        private void UpdateUI(bool FirstDraw = false)
         {
             // Update tile map
             //for (var y = 0; y < _ROWS; ++y)
@@ -259,24 +259,107 @@ namespace _2048
             //    }
             //}
 
+            // Set to 0 any underlying tile where MovedFrom != null && !WasDoubled OR newValue == 0
             for (var y = 0; y < _ROWS; ++y)
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    if (_cells[x][y].WasDoubled && _cells[x][y].GameTile != null)
+                    if ((_cells[x][y].MovedFrom != null && !_cells[x][y].WasDoubled) || _cells[x][y].Value == 0 || _cells[x][y].WasCreated)
                     {
-                        _underlyingTiles[x][y].Value = _cells[x][y].GameTile.Value;
+                        _underlyingTiles[x][y].Value = 0;
                     }
                 }
             }
 
+            // For each tile where MovedFrom != null
+            // Create a new temporary animation tile and animate to move to new location
+            var storyboard = new Storyboard();
+            var tempTiles = new List<GameTile>();
             for (var y = 0; y < _ROWS; ++y)
+            {
+                for (var x = 0; x < _COLS; ++x)
+                {
+                    if (_cells[x][y].MovedFrom != null)
+                    {
+                        var tempTile = new GameTile(true);
+                        tempTile.Width = 150;
+                        tempTile.Height = 150;
+                        tempTile.SetValue(Canvas.ZIndexProperty, 1);
+                        tempTiles.Add(tempTile);
+                        GameGrid.Children.Add(tempTile);
+
+                        tempTile.Value = _cells[x][y].WasDoubled ? _cells[x][y].Value / 2 : _cells[x][y].Value;
+
+                        var xAnimation = new DoubleAnimation();
+                        xAnimation.EnableDependentAnimation = true;
+                        xAnimation.From = _cells[x][y].MovedFrom.Item1 * 150;
+                        xAnimation.To = x * 150;
+                        xAnimation.Duration = new Duration(new TimeSpan(1200000));
+
+                        var yAnimation = new DoubleAnimation();
+                        yAnimation.EnableDependentAnimation = true;
+                        yAnimation.From = _cells[x][y].MovedFrom.Item2 * 150;
+                        yAnimation.To = y * 150;
+                        yAnimation.Duration = new Duration(new TimeSpan(1200000));
+
+                        Storyboard.SetTarget(xAnimation, tempTile);
+                        Storyboard.SetTargetProperty(xAnimation, "(Canvas.Left)");
+
+                        //((TransformGroup)RenderTransform).Children
+
+                        Storyboard.SetTarget(yAnimation, tempTile);
+                        Storyboard.SetTargetProperty(yAnimation, "(Canvas.Top)");
+
+                        storyboard.Children.Add(xAnimation);
+                        storyboard.Children.Add(yAnimation);
+                    }
+                }
+            }
+
+            storyboard.Completed += (Sender, O) => {
+                for (var y = 0; y < _ROWS; ++y)
+                {
+                    for (var x = 0; x < _COLS; ++x)
+                    {
+                        _underlyingTiles[x][y].Value = _cells[x][y].Value;
+                    }
+                }
+
+                foreach (var tile in tempTiles)
+                {
+                    GameGrid.Children.Remove(tile);
+                }
+
+                for (var y = 0; y < _ROWS; ++y)
+                {
+                    for (var x = 0; x < _COLS; ++x)
+                    {
+                        if (_cells[x][y].WasCreated)
+                        {
+                            _underlyingTiles[x][y].BeginNewTileAnimation();
+                        }
+                        else if (_cells[x][y].WasDoubled)
+                        {
+                            _underlyingTiles[x][y].SetValue(Canvas.ZIndexProperty, 100);
+                            _underlyingTiles[x][y].BeginDoubledAnimation();
+                        }
+
+                        _cells[x][y].WasCreated = false;
+                        _cells[x][y].WasDoubled = false;
+                        _cells[x][y].MovedFrom = null;
+                    }
+                }
+            };
+
+            storyboard.Begin();
+
+            /*for (var y = 0; y < _ROWS; ++y)
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
                     _cells[x][y].UpdateUI(GameGrid, _underlyingTiles[x][y]);
                 }
-            }
+            }*/
         }
         
         private void OnKeyDown(CoreWindow Sender, KeyEventArgs Args)
