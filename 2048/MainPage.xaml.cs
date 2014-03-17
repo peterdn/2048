@@ -37,7 +37,7 @@ namespace _2048
             return Value == 0;
         }
 
-        public void UpdateUI(Canvas GameGrid)
+        public void UpdateUI(Canvas GameGrid, GameTile UnderlyingTile)
         {
             if (GameTile != null)
             {
@@ -49,7 +49,6 @@ namespace _2048
                 return;
             }
 
-
             this.GameTile = new GameTile(true);
             this.GameTile.Width = 150;
             this.GameTile.Height = 150;
@@ -60,7 +59,7 @@ namespace _2048
             {
                 //this.GameTile.SetValue(Canvas.LeftProperty, X * 150);
                 //this.GameTile.SetValue(Canvas.TopProperty, Y * 150);
-                BeginMovedTileAnimation();
+                BeginMovedTileAnimation(UnderlyingTile);
             }
             else
             {
@@ -85,7 +84,7 @@ namespace _2048
             MovedFrom = null;
         }
 
-        public void BeginMovedTileAnimation()
+        public void BeginMovedTileAnimation(GameTile UnderlyingTile)
         {
             var xAnimation = new DoubleAnimation();
             xAnimation.EnableDependentAnimation = true;
@@ -98,12 +97,7 @@ namespace _2048
             yAnimation.From = MovedFrom.Item2 * 150;
             yAnimation.To = Y * 150;
             yAnimation.Duration = new Duration(new TimeSpan(1200000));
-
-            if (yAnimation.From != yAnimation.To && xAnimation.From != xAnimation.To)
-            {
-                //Debugger.Break();
-            }
-
+            
             Storyboard.SetTarget(xAnimation, GameTile);
             Storyboard.SetTargetProperty(xAnimation, "(Canvas.Left)");
 
@@ -115,6 +109,9 @@ namespace _2048
             var storyboard = new Storyboard();
             storyboard.Children.Add(xAnimation);
             storyboard.Children.Add(yAnimation);
+
+            storyboard.Completed += (Sender, O) => UnderlyingTile.Value = 0;
+
             storyboard.Begin();
         }
     }
@@ -129,23 +126,31 @@ namespace _2048
         private const int _ROWS = 4;
         private const int _COLS = 4;
 
+        private GameTile[][] _underlyingTiles;
         private Cell[][] _cells;
 
         public MainPage()
         {
             this.InitializeComponent();
             
+            _underlyingTiles = new GameTile[_COLS][];
+
+            for (int i = 0; i < _COLS; ++i)
+            {
+                _underlyingTiles[i] = new GameTile[_ROWS];
+            }
+
             for (int y = 0; y < _ROWS; ++y)
             {
                 for (int x = 0; x < _COLS; ++x)
                 {
-                    var tile = new GameTile();
-                    tile.Width = 150;
-                    tile.Height = 150;
-                    tile.SetValue(Canvas.LeftProperty, x * 150);
-                    tile.SetValue(Canvas.TopProperty, y * 150);
-                    tile.SetValue(Canvas.ZIndexProperty, 0);
-                    GameGrid.Children.Add(tile);
+                    _underlyingTiles[x][y] = new GameTile();
+                    _underlyingTiles[x][y].Width = 150;
+                    _underlyingTiles[x][y].Height = 150;
+                    _underlyingTiles[x][y].SetValue(Canvas.LeftProperty, x * 150);
+                    _underlyingTiles[x][y].SetValue(Canvas.TopProperty, y * 150);
+                    _underlyingTiles[x][y].SetValue(Canvas.ZIndexProperty, 0);
+                    GameGrid.Children.Add(_underlyingTiles[x][y]);
                 }
             }
 
@@ -258,7 +263,18 @@ namespace _2048
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    _cells[x][y].UpdateUI(GameGrid);
+                    if (_cells[x][y].WasDoubled && _cells[x][y].GameTile != null)
+                    {
+                        _underlyingTiles[x][y].Value = _cells[x][y].GameTile.Value;
+                    }
+                }
+            }
+
+            for (var y = 0; y < _ROWS; ++y)
+            {
+                for (var x = 0; x < _COLS; ++x)
+                {
+                    _cells[x][y].UpdateUI(GameGrid, _underlyingTiles[x][y]);
                 }
             }
         }
