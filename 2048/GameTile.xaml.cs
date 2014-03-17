@@ -1,19 +1,18 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-
-// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
-using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
 
 namespace _2048
 {
-    public sealed partial class GameTile : UserControl
+    public sealed partial class GameTile
     {
-        private Color[] _backColors =
+        private readonly Color[] _backColors =
         {
             Color.FromArgb(255, 159, 192, 255),
             Color.FromArgb(255, 168, 255, 99),
@@ -28,7 +27,7 @@ namespace _2048
             Color.FromArgb(255, 255, 78, 59),
         };
 
-        private Color[] _foreColors =
+        private readonly Color[] _foreColors =
         {
             Color.FromArgb(0xff, 0x77, 0x6e, 0x65),
             Color.FromArgb(0xff, 0x77, 0x6e, 0x65),
@@ -52,22 +51,25 @@ namespace _2048
             }
             set
             {
+                if (value == 2 && _model != null && _model.Cells[x][y].WasDoubled)
+                {
+                    Debugger.Break();
+                }
+
                 _value = value;
                 _textBlock.Text = _value > 0 ? _value.ToString() : "";
                 TileBorder.Background = new SolidColorBrush(value > 0 ? _backColors[(int)Math.Log(_value, 2) - 1] : Color.FromArgb(0xff, 0xbb, 0xab, 0xb0));
                 _textBlock.Foreground = value > 0 ? new SolidColorBrush(_foreColors[(int)Math.Log(_value, 2) - 1]) : _textBlock.Foreground;
-                if (value == 0)
-                {
-                    WasDoubled = false;
-                }
             }
         }
 
-        public bool WasDoubled { get; set; }
-
         private readonly TextBlock _textBlock;
 
-        public GameTile(bool TransparentBorder = false)
+        private GameModel _model;
+        private int x;
+        private int y;
+
+        public GameTile(GameModel Model, int x, int y, bool TransparentBorder = false)
         {
             this.InitializeComponent();
 
@@ -83,6 +85,10 @@ namespace _2048
             {
                 ContentBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
             }
+
+            _model = Model;
+            this.x = x;
+            this.y = y;
         }
 
         public void BeginNewTileAnimation()
