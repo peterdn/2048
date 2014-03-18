@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Windows.Foundation;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Animation;
 using Windows.System;
 using Windows.UI.Core;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media.Animation;
+using Microsoft.Phone.Controls;
+using _2048;
+using KeyEventArgs = Windows.UI.Core.KeyEventArgs;
 
-namespace _2048
+namespace WP2048
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainPage
+    public partial class MainPage : PhoneApplicationPage
     {
         private const int _ROWS = 4;
         private const int _COLS = 4;
@@ -22,9 +21,10 @@ namespace _2048
         private GameTile[][] _underlyingTiles;
         private GameModel _gameModel;
 
+        // Constructor
         public MainPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             _gameModel = new GameModel(_ROWS, _COLS);
 
@@ -35,22 +35,23 @@ namespace _2048
                 _underlyingTiles[i] = new GameTile[_ROWS];
             }
 
-            for (int y = 0; y < _ROWS; ++y)
+            for (var y = 0; y < _ROWS; ++y)
             {
-                for (int x = 0; x < _COLS; ++x)
+                for (var x = 0; x < _COLS; ++x)
                 {
                     _underlyingTiles[x][y] = new GameTile(_gameModel, x, y);
-                    _underlyingTiles[x][y].Width = 150;
-                    _underlyingTiles[x][y].Height = 150;
-                    _underlyingTiles[x][y].SetValue(Canvas.LeftProperty, x * 150);
-                    _underlyingTiles[x][y].SetValue(Canvas.TopProperty, y * 150);
+                    _underlyingTiles[x][y].Width = 100;
+                    _underlyingTiles[x][y].Height = 100;
+                    _underlyingTiles[x][y].SetValue(Canvas.LeftProperty, (double)x * 100);
+                    _underlyingTiles[x][y].SetValue(Canvas.TopProperty, (double)y * 100);
                     _underlyingTiles[x][y].SetValue(Canvas.ZIndexProperty, 0);
                     GameGrid.Children.Add(_underlyingTiles[x][y]);
                 }
             }
-            
+
             StartGame();
         }
+
 
         private void LoadMap()
         {
@@ -75,12 +76,12 @@ namespace _2048
 
             UpdateUI();
 
-            Window.Current.CoreWindow.KeyDown += OnKeyDown;
             this.ManipulationStarted += OnManipulationStarted;
             this.ManipulationDelta += OnManipulationDelta;
-            this.ManipulationMode = ManipulationModes.All;
+           
+            //this.ManipulationMode = ManipulationModes.All;
         }
-        
+
 
         private void UpdateUI()
         {
@@ -107,8 +108,8 @@ namespace _2048
                     if (_gameModel.Cells[x][y].MovedFrom != null)
                     {
                         var tempTile = new GameTile(null, x, y, true);
-                        tempTile.Width = 150;
-                        tempTile.Height = 150;
+                        tempTile.Width = 100;
+                        tempTile.Height = 100;
                         tempTile.SetValue(Canvas.ZIndexProperty, 1);
                         tempTiles.Add(tempTile);
                         GameGrid.Children.Add(tempTile);
@@ -116,24 +117,22 @@ namespace _2048
                         tempTile.Value = _gameModel.Cells[x][y].WasDoubled ? _gameModel.Cells[x][y].Value / 2 : _gameModel.Cells[x][y].Value;
 
                         var xAnimation = new DoubleAnimation();
-                        xAnimation.EnableDependentAnimation = true;
-                        xAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item1 * 150;
-                        xAnimation.To = x * 150;
+                        xAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item1 * 100;
+                        xAnimation.To = x * 100;
                         xAnimation.Duration = new Duration(new TimeSpan(1200000));
 
                         var yAnimation = new DoubleAnimation();
-                        yAnimation.EnableDependentAnimation = true;
-                        yAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item2 * 150;
-                        yAnimation.To = y * 150;
+                        yAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item2 * 100;
+                        yAnimation.To = y * 100;
                         yAnimation.Duration = new Duration(new TimeSpan(1200000));
 
                         Storyboard.SetTarget(xAnimation, tempTile);
-                        Storyboard.SetTargetProperty(xAnimation, "(Canvas.Left)");
+                        Storyboard.SetTargetProperty(xAnimation, new PropertyPath("(Canvas.Left)"));
 
                         //((TransformGroup)RenderTransform).Children
 
                         Storyboard.SetTarget(yAnimation, tempTile);
-                        Storyboard.SetTargetProperty(yAnimation, "(Canvas.Top)");
+                        Storyboard.SetTargetProperty(yAnimation, new PropertyPath("(Canvas.Top)"));
 
                         storyboard.Children.Add(xAnimation);
                         storyboard.Children.Add(yAnimation);
@@ -141,7 +140,8 @@ namespace _2048
                 }
             }
 
-            storyboard.Completed += (Sender, O) => {
+            storyboard.Completed += (Sender, O) =>
+            {
                 for (var y = 0; y < _ROWS; ++y)
                 {
                     for (var x = 0; x < _COLS; ++x)
@@ -181,56 +181,31 @@ namespace _2048
 
             storyboard.Begin();
         }
-        
-        private void OnKeyDown(CoreWindow Sender, KeyEventArgs Args)
-        {
-            MoveDirection? direction = null;
-            if (Args.VirtualKey == VirtualKey.Up)
-            {
-                direction = MoveDirection.Up;
-            }
-            else if (Args.VirtualKey == VirtualKey.Down)
-            {
-                direction = MoveDirection.Down;
-            }
-            else if (Args.VirtualKey == VirtualKey.Left)
-            {
-                direction = MoveDirection.Left;
-            }
-            else if (Args.VirtualKey == VirtualKey.Right)
-            {
-                direction = MoveDirection.Right;
-            }
 
-            if (direction != null)
-            {
-                HandleMove(direction.Value);
-            }
-        }
-
-        private void OnManipulationDelta(object Sender, ManipulationDeltaRoutedEventArgs DeltaRoutedEventArgs)
+        private void OnManipulationDelta(object Sender, ManipulationDeltaEventArgs DeltaRoutedEventArgs)
         {
-            if (DeltaRoutedEventArgs.IsInertial)
+            //if (DeltaRoutedEventArgs.IsInertial)
             {
-                if (_manipulationStartPoint.X - DeltaRoutedEventArgs.Position.X > 200)
+                Debug.WriteLine(DeltaRoutedEventArgs.CumulativeManipulation.Translation.ToString());
+                if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.X < -30)
                 {
                     HandleMove(MoveDirection.Left);
                     DeltaRoutedEventArgs.Complete();
                     DeltaRoutedEventArgs.Handled = true;
                 }
-                else if (DeltaRoutedEventArgs.Position.X - _manipulationStartPoint.X > 200)
+                else if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.X > 30)
                 {
                     HandleMove(MoveDirection.Right);
                     DeltaRoutedEventArgs.Complete();
                     DeltaRoutedEventArgs.Handled = true;
                 }
-                else if (_manipulationStartPoint.Y - DeltaRoutedEventArgs.Position.Y > 200)
+                else if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.Y < -30)
                 {
                     HandleMove(MoveDirection.Up);
                     DeltaRoutedEventArgs.Complete();
                     DeltaRoutedEventArgs.Handled = true;
                 }
-                else if (DeltaRoutedEventArgs.Position.Y - _manipulationStartPoint.Y > 200)
+                else if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.Y > 30)
                 {
                     HandleMove(MoveDirection.Down);
                     DeltaRoutedEventArgs.Complete();
@@ -241,9 +216,9 @@ namespace _2048
 
         private Point _manipulationStartPoint;
 
-        private void OnManipulationStarted(object Sender, ManipulationStartedRoutedEventArgs StartedRoutedEventArgs)
+        private void OnManipulationStarted(object Sender, ManipulationStartedEventArgs ManipulationStartedEventArgs)
         {
-            _manipulationStartPoint = StartedRoutedEventArgs.Position;
+            _manipulationStartPoint = ManipulationStartedEventArgs.ManipulationOrigin;
         }
 
         private bool _moveInProgress;
@@ -267,6 +242,5 @@ namespace _2048
                 _moveInProgress = false;
             }
         }
-        
     }
 }
