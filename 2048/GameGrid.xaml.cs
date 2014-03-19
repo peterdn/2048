@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Input;
-using System.Windows.Media.Animation;
+using Windows.Foundation;
 using Windows.System;
 using Windows.UI.Core;
-using Microsoft.Phone.Controls;
-using _2048;
-using KeyEventArgs = Windows.UI.Core.KeyEventArgs;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media.Animation;
 
-namespace WP2048
+// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+
+namespace _2048
 {
-    public partial class MainPage : PhoneApplicationPage
+    public sealed partial class GameGrid
     {
         private const int _ROWS = 4;
         private const int _COLS = 4;
@@ -21,10 +21,16 @@ namespace WP2048
         private GameTile[][] _underlyingTiles;
         private GameModel _gameModel;
 
-        // Constructor
-        public MainPage()
+        private double GetTileSize()
         {
-            InitializeComponent();
+            return GameCanvas.ActualWidth / _ROWS;
+        }
+
+        public GameGrid()
+        {
+            this.InitializeComponent();
+
+            this.SizeChanged += GameGrid_SizeChanged;
 
             _gameModel = new GameModel(_ROWS, _COLS);
 
@@ -35,24 +41,37 @@ namespace WP2048
                 _underlyingTiles[i] = new GameTile[_ROWS];
             }
 
-            for (var y = 0; y < _ROWS; ++y)
+            for (int y = 0; y < _ROWS; ++y)
             {
-                for (var x = 0; x < _COLS; ++x)
+                for (int x = 0; x < _COLS; ++x)
                 {
                     _underlyingTiles[x][y] = new GameTile(x, y);
-                    _underlyingTiles[x][y].Width = 100;
-                    _underlyingTiles[x][y].Height = 100;
-                    _underlyingTiles[x][y].SetValue(Canvas.LeftProperty, (double)x * 100);
-                    _underlyingTiles[x][y].SetValue(Canvas.TopProperty, (double)y * 100);
+                    //_underlyingTiles[x][y].Width = GetTileSize();
+                    //_underlyingTiles[x][y].Height = GetTileSize();
+                    //_underlyingTiles[x][y].SetValue(Canvas.LeftProperty, x * GetTileSize());
+                    //_underlyingTiles[x][y].SetValue(Canvas.TopProperty, y * GetTileSize());
                     _underlyingTiles[x][y].SetValue(Canvas.ZIndexProperty, 0);
-                    GameGrid.Children.Add(_underlyingTiles[x][y]);
+                    GameCanvas.Children.Add(_underlyingTiles[x][y]);
                 }
             }
 
             StartGame();
         }
 
-
+        private void GameGrid_SizeChanged(object Sender, SizeChangedEventArgs Args)
+        {
+            for (var y = 0; y < _ROWS; ++y)
+            {
+                for (var x = 0; x < _COLS; ++x)
+                {
+                    _underlyingTiles[x][y].Width = GetTileSize();
+                    _underlyingTiles[x][y].Height = GetTileSize();
+                    _underlyingTiles[x][y].SetValue(Canvas.LeftProperty, x * GetTileSize());
+                    _underlyingTiles[x][y].SetValue(Canvas.TopProperty, y * GetTileSize());
+                }
+            }
+        }
+        
         private void LoadMap()
         {
             _gameModel.Cells[2][1] = new Cell(2, 1) { Value = 8 };
@@ -76,10 +95,10 @@ namespace WP2048
 
             UpdateUI();
 
+            Window.Current.CoreWindow.KeyDown += OnKeyDown;
             this.ManipulationStarted += OnManipulationStarted;
             this.ManipulationDelta += OnManipulationDelta;
-           
-            //this.ManipulationMode = ManipulationModes.All;
+            this.ManipulationMode = ManipulationModes.All;
         }
 
 
@@ -108,31 +127,33 @@ namespace WP2048
                     if (_gameModel.Cells[x][y].MovedFrom != null)
                     {
                         var tempTile = new GameTile(x, y, true);
-                        tempTile.Width = 100;
-                        tempTile.Height = 100;
+                        tempTile.Width = GetTileSize();
+                        tempTile.Height = GetTileSize();
                         tempTile.SetValue(Canvas.ZIndexProperty, 1);
                         tempTiles.Add(tempTile);
-                        GameGrid.Children.Add(tempTile);
+                        GameCanvas.Children.Add(tempTile);
 
                         tempTile.Value = _gameModel.Cells[x][y].WasDoubled ? _gameModel.Cells[x][y].Value / 2 : _gameModel.Cells[x][y].Value;
 
                         var xAnimation = new DoubleAnimation();
-                        xAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item1 * 100;
-                        xAnimation.To = x * 100;
+                        xAnimation.EnableDependentAnimation = true;
+                        xAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item1 * GetTileSize();
+                        xAnimation.To = x * GetTileSize();
                         xAnimation.Duration = new Duration(new TimeSpan(1200000));
 
                         var yAnimation = new DoubleAnimation();
-                        yAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item2 * 100;
-                        yAnimation.To = y * 100;
+                        yAnimation.EnableDependentAnimation = true;
+                        yAnimation.From = _gameModel.Cells[x][y].MovedFrom.Item2 * GetTileSize();
+                        yAnimation.To = y * GetTileSize();
                         yAnimation.Duration = new Duration(new TimeSpan(1200000));
 
                         Storyboard.SetTarget(xAnimation, tempTile);
-                        Storyboard.SetTargetProperty(xAnimation, new PropertyPath("(Canvas.Left)"));
+                        Storyboard.SetTargetProperty(xAnimation, "(Canvas.Left)");
 
                         //((TransformGroup)RenderTransform).Children
 
                         Storyboard.SetTarget(yAnimation, tempTile);
-                        Storyboard.SetTargetProperty(yAnimation, new PropertyPath("(Canvas.Top)"));
+                        Storyboard.SetTargetProperty(yAnimation, "(Canvas.Top)");
 
                         storyboard.Children.Add(xAnimation);
                         storyboard.Children.Add(yAnimation);
@@ -152,7 +173,7 @@ namespace WP2048
 
                 foreach (var tile in tempTiles)
                 {
-                    GameGrid.Children.Remove(tile);
+                    GameCanvas.Children.Remove(tile);
                 }
 
                 for (var y = 0; y < _ROWS; ++y)
@@ -182,30 +203,55 @@ namespace WP2048
             storyboard.Begin();
         }
 
-        private void OnManipulationDelta(object Sender, ManipulationDeltaEventArgs DeltaRoutedEventArgs)
+        private void OnKeyDown(CoreWindow Sender, KeyEventArgs Args)
         {
-            //if (DeltaRoutedEventArgs.IsInertial)
+            MoveDirection? direction = null;
+            if (Args.VirtualKey == VirtualKey.Up)
             {
-                Debug.WriteLine(DeltaRoutedEventArgs.CumulativeManipulation.Translation.ToString());
-                if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.X < -30)
+                direction = MoveDirection.Up;
+            }
+            else if (Args.VirtualKey == VirtualKey.Down)
+            {
+                direction = MoveDirection.Down;
+            }
+            else if (Args.VirtualKey == VirtualKey.Left)
+            {
+                direction = MoveDirection.Left;
+            }
+            else if (Args.VirtualKey == VirtualKey.Right)
+            {
+                direction = MoveDirection.Right;
+            }
+
+            if (direction != null)
+            {
+                HandleMove(direction.Value);
+            }
+        }
+
+        private void OnManipulationDelta(object Sender, ManipulationDeltaRoutedEventArgs DeltaRoutedEventArgs)
+        {
+            if (DeltaRoutedEventArgs.IsInertial)
+            {
+                if (_manipulationStartPoint.X - DeltaRoutedEventArgs.Position.X > 200)
                 {
                     HandleMove(MoveDirection.Left);
                     DeltaRoutedEventArgs.Complete();
                     DeltaRoutedEventArgs.Handled = true;
                 }
-                else if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.X > 30)
+                else if (DeltaRoutedEventArgs.Position.X - _manipulationStartPoint.X > 200)
                 {
                     HandleMove(MoveDirection.Right);
                     DeltaRoutedEventArgs.Complete();
                     DeltaRoutedEventArgs.Handled = true;
                 }
-                else if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.Y < -30)
+                else if (_manipulationStartPoint.Y - DeltaRoutedEventArgs.Position.Y > 200)
                 {
                     HandleMove(MoveDirection.Up);
                     DeltaRoutedEventArgs.Complete();
                     DeltaRoutedEventArgs.Handled = true;
                 }
-                else if (DeltaRoutedEventArgs.CumulativeManipulation.Translation.Y > 30)
+                else if (DeltaRoutedEventArgs.Position.Y - _manipulationStartPoint.Y > 200)
                 {
                     HandleMove(MoveDirection.Down);
                     DeltaRoutedEventArgs.Complete();
@@ -216,9 +262,9 @@ namespace WP2048
 
         private Point _manipulationStartPoint;
 
-        private void OnManipulationStarted(object Sender, ManipulationStartedEventArgs ManipulationStartedEventArgs)
+        private void OnManipulationStarted(object Sender, ManipulationStartedRoutedEventArgs StartedRoutedEventArgs)
         {
-            _manipulationStartPoint = ManipulationStartedEventArgs.ManipulationOrigin;
+            _manipulationStartPoint = StartedRoutedEventArgs.Position;
         }
 
         private bool _moveInProgress;

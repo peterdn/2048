@@ -58,11 +58,6 @@ namespace _2048
             }
             set
             {
-                if (value == 2 && _model != null && _model.Cells[x][y].WasDoubled)
-                {
-                    Debugger.Break();
-                }
-
                 _value = value;
                 _textBlock.Text = _value > 0 ? _value.ToString() : "";
                 TileBorder.Background = new SolidColorBrush(value > 0 ? _backColors[(int)Math.Log(_value, 2) - 1] : Color.FromArgb(0xff, 0xbb, 0xab, 0xb0));
@@ -72,11 +67,10 @@ namespace _2048
 
         private readonly TextBlock _textBlock;
 
-        private GameModel _model;
         private int x;
         private int y;
 
-        public GameTile(GameModel Model, int x, int y, bool TransparentBorder = false)
+        public GameTile(int x, int y, bool TransparentBorder = false)
         {
             this.InitializeComponent();
 
@@ -93,7 +87,6 @@ namespace _2048
                 ContentBorder.BorderBrush = new SolidColorBrush(Colors.Transparent);
             }
 
-            _model = Model;
             this.x = x;
             this.y = y;
         }
