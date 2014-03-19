@@ -3,7 +3,7 @@
 #if NETFX_CORE
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Animation;
-#elif WINDOWS_PHONE
+#elif (WINDOWS_PHONE || NETFX_451)
 using System.Windows;
 using System.Windows.Media.Animation;
 #endif
@@ -18,7 +18,7 @@ namespace _2048
         {
             return PropertyPath;
         }
-#elif WINDOWS_PHONE
+#elif (WINDOWS_PHONE || NETFX_451)
         public static PropertyPath CreatePropertyPath(string PropertyPath)
         {
             return new PropertyPath(PropertyPath);

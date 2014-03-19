@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Windows.Foundation;
-using Windows.System;
 
 #if NETFX_CORE
+using Windows.Foundation;
+using Windows.System;
 using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Animation;
-#elif WINDOWS_PHONE
+#elif (WINDOWS_PHONE || NETFX_451)
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
