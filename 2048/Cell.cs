@@ -1,41 +1,12 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace _2048
 {
     public class Cell
     {
-        private int _value;
+        public int Value { get; set; }
 
-        public int Value
-        {
-            get
-            {
-                return _value;
-            }
-            set
-            {
-                if (value == 2 && WasDoubled)
-                    Debugger.Break();
-                _value = value;
-            }
-        }
-
-        private bool _wasDoubled;
-
-        public bool WasDoubled
-        {
-            get
-            {
-                return _wasDoubled;
-            }
-            set
-            {
-                if (value == true && _value == 2)
-                    Debugger.Break();
-                _wasDoubled = value;
-            }
-        }
+        public bool WasDoubled { get; set; }
 
         public bool WasCreated { get; set; }
         public int X { get; set; }
