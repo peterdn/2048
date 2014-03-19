@@ -80,7 +80,7 @@ namespace _2048
         
         private void LoadMap()
         {
-            _gameModel.Cells[2][1] = new Cell(2, 1) { Value = 8 };
+            _gameModel.Cells[2][0] = new Cell(2, 0) { Value = 8 };
             _gameModel.Cells[2][2] = new Cell(2, 2) { Value = 4 };
             _gameModel.Cells[2][3] = new Cell(2, 3) { Value = 4 };
             _gameModel.Cells[3][2] = new Cell(3, 2) { Value = 8 };

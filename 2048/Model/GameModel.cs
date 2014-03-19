@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace _2048.Model
 {
@@ -18,6 +17,17 @@ namespace _2048.Model
         public int ColumnCount { get; private set; }
 
         public Cell[][] Cells { get; private set; }
+
+        public IEnumerable<Cell> CellsIterator()
+        {
+            for (var x = 0; x < ColumnCount; ++x)
+            {
+                for (var y = 0; y < RowCount; ++y)
+                {
+                    yield return Cells[x][y];
+                }
+            }
+        } 
 
         public GameModel(int RowCount, int ColumnCount)
         {
@@ -41,12 +51,13 @@ namespace _2048.Model
 
         public bool PerformMove(MoveDirection Direction)
         {
-            if (PackTiles(Direction) | MergeTiles(Direction))
+            if (PackTiles(Direction))
             {
                 var newTile = GetRandomEmptyTile();
 
                 if (newTile != null)
                 {
+                    // TODO move this to its own testable method
                     Cells[newTile.Item1][newTile.Item2].Value = GetRandomStartingNumber();
                     Cells[newTile.Item1][newTile.Item2].WasCreated = true;
                     return true;
@@ -65,157 +76,84 @@ namespace _2048.Model
             var changed = false;
             if (Direction == MoveDirection.Up)
             {
+                // For each column
                 for (var x = 0; x < ColumnCount; ++x)
                 {
-                    var lastEmptyY = 0;
-
-                    while (lastEmptyY < RowCount && !Cells[x][lastEmptyY].IsEmpty())
+                    // Look at tiles in the column from bottom to top
+                    for (var y = 1; y < RowCount; ++y)
                     {
-                        ++lastEmptyY;
-                    }
-
-                    var currentY = lastEmptyY + 1;
-                    while (currentY < RowCount)
-                    {
-                        if (!Cells[x][currentY].IsEmpty())
+                        if (Cells[x][y].IsEmpty())
                         {
-                            changed = true;
-                            Cells[x][lastEmptyY].Value = Cells[x][currentY].Value;
-                            Cells[x][lastEmptyY].MovedFrom = Cells[x][currentY].MovedFrom ?? new Tuple<int, int>(x, currentY);
-                            Cells[x][currentY].Value = 0;
-                            Cells[x][currentY].MovedFrom = null;
-                            ++lastEmptyY;
+                            continue;
                         }
-                        ++currentY;
-                    }
-                }
-            }
-            else if (Direction == MoveDirection.Down)
-            {
-                for (var x = 0; x < ColumnCount; ++x)
-                {
-                    var lastEmptyY = RowCount - 1;
 
-                    while (lastEmptyY >= 0 && !Cells[x][lastEmptyY].IsEmpty())
-                    {
-                        --lastEmptyY;
-                    }
-
-                    var currentY = lastEmptyY - 1;
-                    while (currentY >= 0)
-                    {
-                        if (!Cells[x][currentY].IsEmpty())
+                        var destinationY = y;
+                        while (destinationY - 1 >= 0 && (Cells[x][destinationY - 1].IsEmpty() || (Cells[x][destinationY - 1].Value == Cells[x][y].Value && !Cells[x][destinationY - 1].WasDoubled)))
                         {
-                            changed = true;
-                            Cells[x][lastEmptyY].Value = Cells[x][currentY].Value;
-                            Cells[x][lastEmptyY].MovedFrom = Cells[x][currentY].MovedFrom ?? new Tuple<int, int>(x, currentY);
-                            Cells[x][currentY].Value = 0;
-                            Cells[x][currentY].MovedFrom = null;
-                            --lastEmptyY;
+                            --destinationY;
                         }
-                        --currentY;
-                    }
-                }
-            }
-            else if (Direction == MoveDirection.Left)
-            {
-                for (var y = 0; y < RowCount; ++y)
-                {
-                    var lastEmptyX = 0;
 
-                    while (lastEmptyX < ColumnCount && !Cells[lastEmptyX][y].IsEmpty())
-                    {
-                        ++lastEmptyX;
-                    }
-
-                    var currentX = lastEmptyX + 1;
-                    while (currentX < ColumnCount)
-                    {
-                        if (Cells[currentX][y].Value > 0)
+                        if (Cells[x][destinationY].IsEmpty())
                         {
+                            // This is the last available empty cell so take it!
+                            Cells[x][destinationY].Value = Cells[x][y].Value;
+                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
                             changed = true;
-                            Cells[lastEmptyX][y].Value = Cells[currentX][y].Value;
-                            Cells[lastEmptyX][y].MovedFrom = Cells[currentX][y].MovedFrom ?? new Tuple<int, int>(currentX, y);
-                            Cells[currentX][y].Value = 0;
-                            Cells[currentX][y].MovedFrom = null;
-                            ++lastEmptyX;
                         }
-                        ++currentX;
-                    }
-                }
-            }
-            else if (Direction == MoveDirection.Right)
-            {
-
-                for (var y = 0; y < RowCount; ++y)
-                {
-                    var lastEmptyX = ColumnCount - 1;
-
-                    while (lastEmptyX >= 0 && !Cells[lastEmptyX][y].IsEmpty())
-                    {
-                        --lastEmptyX;
-                    }
-
-                    var currentX = lastEmptyX - 1;
-                    while (currentX >= 0)
-                    {
-                        if (Cells[currentX][y].Value > 0)
+                        else if (destinationY != y)
                         {
+                            // The next available cell has the same value and hasn't yet
+                            // been merged, so lets merge them!
+                            Cells[x][destinationY].Value *= 2;
+                            Cells[x][destinationY].WasDoubled = true;
+                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
                             changed = true;
-                            Cells[lastEmptyX][y].Value = Cells[currentX][y].Value;
-                            Cells[lastEmptyX][y].MovedFrom = Cells[currentX][y].MovedFrom ?? new Tuple<int, int>(currentX, y);
-                            Cells[currentX][y].Value = 0;
-                            Cells[currentX][y].MovedFrom = null;
-                            --lastEmptyX;
-                        }
-                        --currentX;
-                    }
-                }
-            }
-            return changed;
-        }
-
-        private bool MergeTiles(MoveDirection Direction)
-        {
-            var changed = false;
-            if (Direction == MoveDirection.Up)
-            {
-                for (var x = 0; x < ColumnCount; ++x)
-                {
-                    for (var y = 0; y < RowCount - 1 && Cells[x][y].Value > 0; ++y)
-                    {
-                        if (Cells[x][y].Value == Cells[x][y + 1].Value)
-                        {
-                            changed = true;
-                            Cells[x][y].Value *= 2;
-                            Cells[x][y].WasDoubled = true;
-                            if (Cells[x][y].Value == 1)
-                                Debugger.Break();
-                            Cells[x][y].MovedFrom = Cells[x][y + 1].MovedFrom ?? new Tuple<int, int>(x, y + 1);
-                            Cells[x][y + 1].Value = 0;
-                            Cells[x][y + 1].MovedFrom = null;
-                            PackTiles(Direction);
                         }
                     }
                 }
             }
             else if (Direction == MoveDirection.Down)
             {
+                // For each column
                 for (var x = 0; x < ColumnCount; ++x)
                 {
-                    for (var y = RowCount - 1; y >= 1 && Cells[x][y].Value > 0; --y)
+                    // Look at tiles in the column from bottom to top
+                    for (var y = RowCount - 2; y >= 0; --y)
                     {
-                        if (Cells[x][y].Value == Cells[x][y - 1].Value)
+                        if (Cells[x][y].IsEmpty())
                         {
+                            continue;
+                        }
+
+                        var destinationY = y;
+                        while (destinationY + 1 < RowCount && (Cells[x][destinationY + 1].IsEmpty() || (Cells[x][destinationY + 1].Value == Cells[x][y].Value && !Cells[x][destinationY + 1].WasDoubled)))
+                        {
+                            ++destinationY;
+                        }
+
+                        if (Cells[x][destinationY].IsEmpty())
+                        {
+                            // This is the last available empty cell so take it!
+                            Cells[x][destinationY].Value = Cells[x][y].Value;
+                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
                             changed = true;
-                            Cells[x][y].Value *= 2;
-                            Cells[x][y].WasDoubled = true;
-                            if (Cells[x][y].Value == 1)
-                                Debugger.Break();
-                            Cells[x][y].MovedFrom = Cells[x][y - 1].MovedFrom ?? new Tuple<int, int>(x, y - 1);
-                            Cells[x][y - 1].Value = 0;
-                            Cells[x][y - 1].MovedFrom = null;
-                            PackTiles(Direction);
+                        }
+                        else if (destinationY != y)
+                        {
+                            // The next available cell has the same value and hasn't yet
+                            // been merged, so lets merge them!
+                            Cells[x][destinationY].Value *= 2;
+                            Cells[x][destinationY].WasDoubled = true;
+                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
+                            changed = true;
                         }
                     }
                 }
@@ -224,19 +162,39 @@ namespace _2048.Model
             {
                 for (var y = 0; y < RowCount; ++y)
                 {
-                    for (var x = 0; x < ColumnCount - 1 && Cells[x][y].Value > 0; ++x)
+                    // Look at tiles in the column from bottom to top
+                    for (var x = 1; x < ColumnCount; ++x)
                     {
-                        if (Cells[x][y].Value == Cells[x + 1][y].Value)
+                        if (Cells[x][y].IsEmpty())
                         {
+                            continue;
+                        }
+
+                        var destinationX = x;
+                        while (destinationX - 1 >= 0 && (Cells[destinationX - 1][y].IsEmpty() || (Cells[destinationX - 1][y].Value == Cells[x][y].Value && !Cells[destinationX - 1][y].WasDoubled)))
+                        {
+                            --destinationX;
+                        }
+
+                        if (Cells[destinationX][y].IsEmpty())
+                        {
+                            // This is the last available empty cell so take it!
+                            Cells[destinationX][y].Value = Cells[x][y].Value;
+                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
                             changed = true;
-                            Cells[x][y].Value *= 2;
-                            Cells[x][y].WasDoubled = true;
-                            if (Cells[x][y].Value == 1)
-                                Debugger.Break();
-                            Cells[x][y].MovedFrom = Cells[x + 1][y].MovedFrom ?? new Tuple<int, int>(x + 1, y);
-                            Cells[x + 1][y].Value = 0;
-                            Cells[x + 1][y].MovedFrom = null;
-                            PackTiles(Direction);
+                        }
+                        else if (destinationX != x)
+                        {
+                            // The next available cell has the same value and hasn't yet
+                            // been merged, so lets merge them!
+                            Cells[destinationX][y].Value *= 2;
+                            Cells[destinationX][y].WasDoubled = true;
+                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
+                            changed = true;
                         }
                     }
                 }
@@ -245,24 +203,43 @@ namespace _2048.Model
             {
                 for (var y = 0; y < RowCount; ++y)
                 {
-                    for (var x = ColumnCount - 1; x >= 1 && Cells[x][y].Value > 0; --x)
+                    // Look at tiles in the column from bottom to top
+                    for (var x = ColumnCount - 2; x >= 0; --x)
                     {
-                        if (Cells[x][y].Value == Cells[x - 1][y].Value)
+                        if (Cells[x][y].IsEmpty())
                         {
+                            continue;
+                        }
+
+                        var destinationX = x;
+                        while (destinationX + 1 < ColumnCount && (Cells[destinationX + 1][y].IsEmpty() || (Cells[destinationX + 1][y].Value == Cells[x][y].Value && !Cells[destinationX + 1][y].WasDoubled)))
+                        {
+                            ++destinationX;
+                        }
+
+                        if (Cells[destinationX][y].IsEmpty())
+                        {
+                            // This is the last available empty cell so take it!
+                            Cells[destinationX][y].Value = Cells[x][y].Value;
+                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
                             changed = true;
-                            Cells[x][y].Value *= 2;
-                            Cells[x][y].WasDoubled = true;
-                            if (Cells[x][y].Value == 1)
-                                Debugger.Break();
-                            Cells[x][y].MovedFrom = Cells[x - 1][y].MovedFrom ?? new Tuple<int, int>(x - 1, y);
-                            Cells[x - 1][y].Value = 0;
-                            Cells[x - 1][y].MovedFrom = null;
-                            PackTiles(Direction);
+                        }
+                        else if (destinationX != x)
+                        {
+                            // The next available cell has the same value and hasn't yet
+                            // been merged, so lets merge them!
+                            Cells[destinationX][y].Value *= 2;
+                            Cells[destinationX][y].WasDoubled = true;
+                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
+                            Cells[x][y].Value = 0;
+                            Cells[x][y].MovedFrom = null;
+                            changed = true;
                         }
                     }
                 }
             }
-
             return changed;
         }
 
@@ -270,17 +247,14 @@ namespace _2048.Model
         private Tuple<int, int> GetRandomEmptyTile()
         {
             var emptyIndices = new List<Tuple<int, int>>();
-            for (int y = 0; y < RowCount; ++y)
+            foreach (var cell in CellsIterator())
             {
-                for (int x = 0; x < ColumnCount; ++x)
+                if (cell.IsEmpty())
                 {
-                    if (Cells[x][y].IsEmpty())
-                    {
-                        emptyIndices.Add(new Tuple<int, int>(x, y));
-                    }
+                    emptyIndices.Add(new Tuple<int, int>(cell.X, cell.Y));
                 }
             }
-
+            
             if (emptyIndices.Count == 0)
             {
                 return null;
