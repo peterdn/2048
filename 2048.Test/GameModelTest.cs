@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using _2048.Model;
 
 namespace _2048.Test
@@ -25,7 +24,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 2, 0},
-                new[] {0, 0, 2, 0},
+                new[] {0, 0, 2, 0}
             };
 
             SetCells(cells);
@@ -35,7 +34,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
                 new[] {2, 0, 0, 0},
-                new[] {2, 0, 0, 0},
+                new[] {2, 0, 0, 0}
             }));
 
             SetCells(cells);
@@ -45,7 +44,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 2},
-                new[] {0, 0, 0, 2},
+                new[] {0, 0, 0, 2}
             }));
 
             SetCells(cells);
@@ -55,7 +54,7 @@ namespace _2048.Test
                 new[] {0, 0, 4, 0},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {0, 0, 0, 0},
+                new[] {0, 0, 0, 0}
             }));
 
             SetCells(cells);
@@ -65,7 +64,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {0, 0, 4, 0},
+                new[] {0, 0, 4, 0}
             }));
         }
 
@@ -77,7 +76,7 @@ namespace _2048.Test
                 new[] {0, 4, 0, 0},
                 new[] {2, 0, 2, 4},
                 new[] {0, 0, 0, 0},
-                new[] {0, 4, 2, 0},
+                new[] {0, 4, 2, 0}
             };
 
             SetCells(cells);
@@ -87,7 +86,7 @@ namespace _2048.Test
                 new[] {4, 0, 0, 0},
                 new[] {4, 4, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {4, 2, 0, 0},
+                new[] {4, 2, 0, 0}
             }));
 
             SetCells(cells);
@@ -97,7 +96,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 4},
                 new[] {0, 0, 4, 4},
                 new[] {0, 0, 0, 0},
-                new[] {0, 0, 4, 2},
+                new[] {0, 0, 4, 2}
             }));
 
             SetCells(cells);
@@ -107,7 +106,7 @@ namespace _2048.Test
                 new[] {2, 8, 4, 4},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {0, 0, 0, 0},
+                new[] {0, 0, 0, 0}
             }));
 
             SetCells(cells);
@@ -117,7 +116,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {2, 8, 4, 4},
+                new[] {2, 8, 4, 4}
             }));
         }
 
@@ -129,7 +128,7 @@ namespace _2048.Test
                 new[] {16, 0, 0, 16},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {16, 0, 0, 16},
+                new[] {16, 0, 0, 16}
             };
 
             SetCells(cells);
@@ -139,7 +138,7 @@ namespace _2048.Test
                 new[] {32, 0, 0, 0},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {32, 0, 0, 0},
+                new[] {32, 0, 0, 0}
             }));
 
             SetCells(cells);
@@ -149,7 +148,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 32},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {0, 0, 0, 32},
+                new[] {0, 0, 0, 32}
             }));
 
             SetCells(cells);
@@ -159,7 +158,7 @@ namespace _2048.Test
                 new[] {32, 0, 0, 32},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {0, 0, 0, 0},
+                new[] {0, 0, 0, 0}
             }));
 
             SetCells(cells);
@@ -169,7 +168,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0},
-                new[] {32, 0, 0, 32},
+                new[] {32, 0, 0, 32}
             }));
         }
 
@@ -181,7 +180,7 @@ namespace _2048.Test
                 new[] {16, 0, 0, 16},
                 new[] {2, 0, 0, 0},
                 new[] {2, 32, 16, 8},
-                new[] {64, 32, 16, 8},
+                new[] {64, 32, 16, 8}
             };
 
             SetCells(cells);
@@ -191,7 +190,7 @@ namespace _2048.Test
                 new[] {32, 0, 0, 0},
                 new[] {2, 0, 0, 0},
                 new[] {2, 32, 16, 8},
-                new[] {64, 32, 16, 8},
+                new[] {64, 32, 16, 8}
             }));
 
             SetCells(cells);
@@ -201,7 +200,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 32},
                 new[] {0, 0, 0, 2},
                 new[] {2, 32, 16, 8},
-                new[] {64, 32, 16, 8},
+                new[] {64, 32, 16, 8}
             }));
 
             SetCells(cells);
@@ -211,7 +210,7 @@ namespace _2048.Test
                 new[] {16, 64, 32, 16},
                 new[] {4, 0, 0, 16},
                 new[] {64, 0, 0, 0},
-                new[] {0, 0, 0, 0},
+                new[] {0, 0, 0, 0}
             }));
 
             SetCells(cells);
@@ -221,7 +220,59 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {16, 0, 0, 0},
                 new[] {4, 0, 0, 16},
-                new[] {64, 64, 32, 16},
+                new[] {64, 64, 32, 16}
+            }));
+        }
+
+        [TestMethod]
+        public void TestMultiMerge()
+        {
+            int[][] cells =
+            {
+                new[] {4, 4, 4, 4},
+                new[] {4, 4, 4, 4},
+                new[] {4, 4, 4, 4},
+                new[] {4, 4, 4, 4}
+            };
+
+            SetCells(cells);
+            _gameModel.PerformMove(MoveDirection.Up);
+            Assert.IsTrue(GridsEqual(new[]
+            {
+                new[] {8, 8, 0, 0},
+                new[] {8, 8, 0, 0},
+                new[] {8, 8, 0, 0},
+                new[] {8, 8, 0, 0}
+            }));
+
+            SetCells(cells);
+            _gameModel.PerformMove(MoveDirection.Down);
+            Assert.IsTrue(GridsEqual(new[]
+            {
+                new[] {0, 0, 8, 8},
+                new[] {0, 0, 8, 8},
+                new[] {0, 0, 8, 8},
+                new[] {0, 0, 8, 8}
+            }));
+
+            SetCells(cells);
+            _gameModel.PerformMove(MoveDirection.Left);
+            Assert.IsTrue(GridsEqual(new[]
+            {
+                new[] {8, 8, 8, 8},
+                new[] {8, 8, 8, 8},
+                new[] {0, 0, 0, 0},
+                new[] {0, 0, 0, 0}
+            }));
+
+            SetCells(cells);
+            _gameModel.PerformMove(MoveDirection.Right);
+            Assert.IsTrue(GridsEqual(new[]
+            {
+                new[] {0, 0, 0, 0},
+                new[] {0, 0, 0, 0},
+                new[] {8, 8, 8, 8},
+                new[] {8, 8, 8, 8}
             }));
         }
 
@@ -233,7 +284,7 @@ namespace _2048.Test
                 new[] {16, 2, 4, 16},
                 new[] {2, 4, 0, 32},
                 new[] {4, 2, 32, 8},
-                new[] {16, 32, 8, 16},
+                new[] {16, 32, 8, 16}
             };
 
             SetCells(cells);
@@ -243,7 +294,7 @@ namespace _2048.Test
                 new[] {16, 2, 4, 16},
                 new[] {2, 4, 32, 0},
                 new[] {4, 2, 32, 8},
-                new[] {16, 32, 8, 16},
+                new[] {16, 32, 8, 16}
             }));
 
             SetCells(cells);
@@ -253,7 +304,7 @@ namespace _2048.Test
                 new[] {16, 2, 4, 16},
                 new[] {0, 2, 4, 32},
                 new[] {4, 2, 32, 8},
-                new[] {16, 32, 8, 16},
+                new[] {16, 32, 8, 16}
             }));
 
             SetCells(cells);
@@ -263,7 +314,7 @@ namespace _2048.Test
                 new[] {16, 2, 4, 16},
                 new[] {2, 4, 32, 32},
                 new[] {4, 2, 8, 8},
-                new[] {16, 32, 0, 16},
+                new[] {16, 32, 0, 16}
             }));
 
             SetCells(cells);
@@ -273,7 +324,7 @@ namespace _2048.Test
                 new[] {16, 2, 0, 16},
                 new[] {2, 4, 4, 32},
                 new[] {4, 2, 32, 8},
-                new[] {16, 32, 8, 16},
+                new[] {16, 32, 8, 16}
             }));
         }
 
@@ -285,7 +336,7 @@ namespace _2048.Test
                 new[] {16, 2, 4, 16},
                 new[] {2, 4, 16, 32},
                 new[] {4, 2, 32, 8},
-                new[] {16, 32, 8, 16},
+                new[] {16, 32, 8, 16}
             };
 
             SetCells(cells);

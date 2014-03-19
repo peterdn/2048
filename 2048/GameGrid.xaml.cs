@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
 using _2048.Model;
+
 #if NETFX_CORE
 using Windows.Foundation;
 using Windows.System;
@@ -13,7 +12,6 @@ using Windows.UI.Xaml.Media.Animation;
 #elif (WINDOWS_PHONE || NETFX_451)
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media.Animation;
 #endif
 
@@ -52,10 +50,6 @@ namespace _2048
                 for (int x = 0; x < _COLS; ++x)
                 {
                     _underlyingTiles[x][y] = new GameTile(x, y);
-                    //_underlyingTiles[x][y].Width = GetTileSize();
-                    //_underlyingTiles[x][y].Height = GetTileSize();
-                    //_underlyingTiles[x][y].SetValue(Canvas.LeftProperty, x * GetTileSize());
-                    //_underlyingTiles[x][y].SetValue(Canvas.TopProperty, y * GetTileSize());
                     _underlyingTiles[x][y].SetValue(Canvas.ZIndexProperty, 0);
                     GameCanvas.Children.Add(_underlyingTiles[x][y]);
                 }
@@ -115,7 +109,7 @@ namespace _2048
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    if ((_gameModel.Cells[x][y].MovedFrom != null && !_gameModel.Cells[x][y].WasDoubled) || _gameModel.Cells[x][y].Value == 0 || _gameModel.Cells[x][y].WasCreated)
+                    if ((_gameModel.Cells[x][y].PreviousPosition != null && !_gameModel.Cells[x][y].WasMerged) || _gameModel.Cells[x][y].Value == 0 || _gameModel.Cells[x][y].WasCreated)
                     {
                         _underlyingTiles[x][y].Value = 0;
                     }
@@ -130,7 +124,7 @@ namespace _2048
             {
                 for (var x = 0; x < _COLS; ++x)
                 {
-                    if (_gameModel.Cells[x][y].MovedFrom != null)
+                    if (_gameModel.Cells[x][y].PreviousPosition != null)
                     {
                         var tempTile = new GameTile(x, y, true);
                         tempTile.Width = GetTileSize();
@@ -139,20 +133,18 @@ namespace _2048
                         tempTiles.Add(tempTile);
                         GameCanvas.Children.Add(tempTile);
 
-                        tempTile.Value = _gameModel.Cells[x][y].WasDoubled ? _gameModel.Cells[x][y].Value / 2 : _gameModel.Cells[x][y].Value;
+                        tempTile.Value = _gameModel.Cells[x][y].WasMerged ? _gameModel.Cells[x][y].Value / 2 : _gameModel.Cells[x][y].Value;
 
-                        var from = _gameModel.Cells[x][y].MovedFrom.Item1 * GetTileSize();
+                        var from = _gameModel.Cells[x][y].PreviousPosition.X * GetTileSize();
                         var to = x * GetTileSize();
                         var xAnimation = Animation.CreateDoubleAnimation(from, to, 1200000);
 
-                        from = _gameModel.Cells[x][y].MovedFrom.Item2 * GetTileSize();
+                        from = _gameModel.Cells[x][y].PreviousPosition.Y * GetTileSize();
                         to = y * GetTileSize();
                         var yAnimation = Animation.CreateDoubleAnimation(from, to, 1200000);
 
                         Storyboard.SetTarget(xAnimation, tempTile);
                         Storyboard.SetTargetProperty(xAnimation, Animation.CreatePropertyPath("(Canvas.Left)"));
-
-                        //((TransformGroup)RenderTransform).Children
 
                         Storyboard.SetTarget(yAnimation, tempTile);
                         Storyboard.SetTargetProperty(yAnimation, Animation.CreatePropertyPath("(Canvas.Top)"));
@@ -178,27 +170,24 @@ namespace _2048
                     GameCanvas.Children.Remove(tile);
                 }
 
-                for (var y = 0; y < _ROWS; ++y)
+                foreach (var cell in _gameModel.CellsIterator())
                 {
-                    for (var x = 0; x < _COLS; ++x)
+                    if (cell.WasCreated)
                     {
-                        if (_gameModel.Cells[x][y].WasCreated)
-                        {
-                            _underlyingTiles[x][y].BeginNewTileAnimation();
-                        }
-                        else if (_gameModel.Cells[x][y].WasDoubled)
-                        {
-                            _underlyingTiles[x][y].SetValue(Canvas.ZIndexProperty, 100);
-                            _underlyingTiles[x][y].BeginDoubledAnimation();
-                        }
-
-                        _gameModel.Cells[x][y].WasCreated = false;
-                        _gameModel.Cells[x][y].WasDoubled = false;
-                        _gameModel.Cells[x][y].MovedFrom = null;
+                        _underlyingTiles[cell.X][cell.Y].BeginNewTileAnimation();
                     }
+                    else if (cell.WasMerged)
+                    {
+                        _underlyingTiles[cell.X][cell.Y].SetValue(Canvas.ZIndexProperty, 100);
+                        _underlyingTiles[cell.X][cell.Y].BeginDoubledAnimation();
+                    }
+
+                    // TODO move this to a 'ResetTurn' method in the model
+                    cell.WasCreated = false;
+                    cell.WasMerged = false;
+                    cell.PreviousPosition = null;
                 }
 
-                Debug.WriteLine("ANIMATION COMPLETE");
                 _moveInProgress = false;
             };
 
@@ -218,7 +207,6 @@ namespace _2048
 
             if (_gameModel.PerformMove(Direction))
             {
-                Debug.WriteLine("Starting move!");
                 UpdateUI();
             }
             else

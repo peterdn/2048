@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace _2048.Model
 {
@@ -51,7 +52,7 @@ namespace _2048.Model
 
         public bool PerformMove(MoveDirection Direction)
         {
-            if (PackTiles(Direction))
+            if (PackAndMerge(Direction))
             {
                 var newTile = GetRandomEmptyTile();
 
@@ -71,7 +72,7 @@ namespace _2048.Model
         }
 
 
-        private bool PackTiles(MoveDirection Direction)
+        private bool PackAndMerge(MoveDirection Direction)
         {
             var changed = false;
             if (Direction == MoveDirection.Up)
@@ -88,29 +89,14 @@ namespace _2048.Model
                         }
 
                         var destinationY = y;
-                        while (destinationY - 1 >= 0 && (Cells[x][destinationY - 1].IsEmpty() || (Cells[x][destinationY - 1].Value == Cells[x][y].Value && !Cells[x][destinationY - 1].WasDoubled)))
+                        while (destinationY - 1 >= 0 && (Cells[x][destinationY - 1].IsEmpty() || (Cells[x][destinationY - 1].Value == Cells[x][y].Value && !Cells[x][destinationY - 1].WasMerged)))
                         {
                             --destinationY;
                         }
 
-                        if (Cells[x][destinationY].IsEmpty())
+                        if (destinationY != y)
                         {
-                            // This is the last available empty cell so take it!
-                            Cells[x][destinationY].Value = Cells[x][y].Value;
-                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
-                            changed = true;
-                        }
-                        else if (destinationY != y)
-                        {
-                            // The next available cell has the same value and hasn't yet
-                            // been merged, so lets merge them!
-                            Cells[x][destinationY].Value *= 2;
-                            Cells[x][destinationY].WasDoubled = true;
-                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
+                            MergeCells(Cells[x][y], Cells[x][destinationY]);
                             changed = true;
                         }
                     }
@@ -130,29 +116,14 @@ namespace _2048.Model
                         }
 
                         var destinationY = y;
-                        while (destinationY + 1 < RowCount && (Cells[x][destinationY + 1].IsEmpty() || (Cells[x][destinationY + 1].Value == Cells[x][y].Value && !Cells[x][destinationY + 1].WasDoubled)))
+                        while (destinationY + 1 < RowCount && (Cells[x][destinationY + 1].IsEmpty() || (Cells[x][destinationY + 1].Value == Cells[x][y].Value && !Cells[x][destinationY + 1].WasMerged)))
                         {
                             ++destinationY;
                         }
 
-                        if (Cells[x][destinationY].IsEmpty())
+                        if (destinationY != y)
                         {
-                            // This is the last available empty cell so take it!
-                            Cells[x][destinationY].Value = Cells[x][y].Value;
-                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
-                            changed = true;
-                        }
-                        else if (destinationY != y)
-                        {
-                            // The next available cell has the same value and hasn't yet
-                            // been merged, so lets merge them!
-                            Cells[x][destinationY].Value *= 2;
-                            Cells[x][destinationY].WasDoubled = true;
-                            Cells[x][destinationY].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
+                            MergeCells(Cells[x][y], Cells[x][destinationY]);
                             changed = true;
                         }
                     }
@@ -171,29 +142,14 @@ namespace _2048.Model
                         }
 
                         var destinationX = x;
-                        while (destinationX - 1 >= 0 && (Cells[destinationX - 1][y].IsEmpty() || (Cells[destinationX - 1][y].Value == Cells[x][y].Value && !Cells[destinationX - 1][y].WasDoubled)))
+                        while (destinationX - 1 >= 0 && (Cells[destinationX - 1][y].IsEmpty() || (Cells[destinationX - 1][y].Value == Cells[x][y].Value && !Cells[destinationX - 1][y].WasMerged)))
                         {
                             --destinationX;
                         }
 
-                        if (Cells[destinationX][y].IsEmpty())
+                        if (destinationX != x)
                         {
-                            // This is the last available empty cell so take it!
-                            Cells[destinationX][y].Value = Cells[x][y].Value;
-                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
-                            changed = true;
-                        }
-                        else if (destinationX != x)
-                        {
-                            // The next available cell has the same value and hasn't yet
-                            // been merged, so lets merge them!
-                            Cells[destinationX][y].Value *= 2;
-                            Cells[destinationX][y].WasDoubled = true;
-                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
+                            MergeCells(Cells[x][y], Cells[destinationX][y]);
                             changed = true;
                         }
                     }
@@ -212,29 +168,14 @@ namespace _2048.Model
                         }
 
                         var destinationX = x;
-                        while (destinationX + 1 < ColumnCount && (Cells[destinationX + 1][y].IsEmpty() || (Cells[destinationX + 1][y].Value == Cells[x][y].Value && !Cells[destinationX + 1][y].WasDoubled)))
+                        while (destinationX + 1 < ColumnCount && (Cells[destinationX + 1][y].IsEmpty() || (Cells[destinationX + 1][y].Value == Cells[x][y].Value && !Cells[destinationX + 1][y].WasMerged)))
                         {
                             ++destinationX;
                         }
 
-                        if (Cells[destinationX][y].IsEmpty())
+                        if (destinationX != x)
                         {
-                            // This is the last available empty cell so take it!
-                            Cells[destinationX][y].Value = Cells[x][y].Value;
-                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
-                            changed = true;
-                        }
-                        else if (destinationX != x)
-                        {
-                            // The next available cell has the same value and hasn't yet
-                            // been merged, so lets merge them!
-                            Cells[destinationX][y].Value *= 2;
-                            Cells[destinationX][y].WasDoubled = true;
-                            Cells[destinationX][y].MovedFrom = Cells[x][y].MovedFrom ?? new Tuple<int, int>(x, y);
-                            Cells[x][y].Value = 0;
-                            Cells[x][y].MovedFrom = null;
+                            MergeCells(Cells[x][y], Cells[destinationX][y]);
                             changed = true;
                         }
                     }
@@ -243,18 +184,48 @@ namespace _2048.Model
             return changed;
         }
 
+        private void MergeCells(Cell SourceCell, Cell DestinationCell)
+        {
+            // Assumes that an appropriate merge CAN definitely be done.
+            if (!(SourceCell.X == DestinationCell.X ^ SourceCell.Y == DestinationCell.Y))
+            {
+                throw new InvalidOperationException("Cells to be merged must share either a row or column but not both");
+            }
+            
+            if (DestinationCell.IsEmpty())
+            {
+                // This is the last available empty cell so take it!
+                DestinationCell.Value = SourceCell.Value;
+                DestinationCell.PreviousPosition = SourceCell.PreviousPosition ?? new Coordinate(SourceCell.X, SourceCell.Y);
+                SourceCell.Value = 0;
+                SourceCell.PreviousPosition = null;
+            }
+            else
+            {
+                if (DestinationCell.WasMerged)
+                {
+                    throw new InvalidOperationException("Destination cell has already been merged");
+                }
+                else if (SourceCell.Value != DestinationCell.Value)
+                {
+                    throw new InvalidOperationException("Source and destination cells must have the same value");
+                }
+
+                // The next available cell has the same value and hasn't yet
+                // been merged, so lets merge them!
+                DestinationCell.Value *= 2;
+                DestinationCell.WasMerged = true;
+                DestinationCell.PreviousPosition = SourceCell.PreviousPosition ?? new Coordinate(SourceCell.X, SourceCell.Y);
+                SourceCell.Value = 0;
+                SourceCell.PreviousPosition = null;
+            }
+        }
+
         private Random rnd = new Random();
         private Tuple<int, int> GetRandomEmptyTile()
         {
-            var emptyIndices = new List<Tuple<int, int>>();
-            foreach (var cell in CellsIterator())
-            {
-                if (cell.IsEmpty())
-                {
-                    emptyIndices.Add(new Tuple<int, int>(cell.X, cell.Y));
-                }
-            }
-            
+            var emptyIndices = (from cell in CellsIterator() where cell.IsEmpty() select new Tuple<int, int>(cell.X, cell.Y)).ToList();
+
             if (emptyIndices.Count == 0)
             {
                 return null;
