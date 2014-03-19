@@ -71,17 +71,17 @@
     <Compile Include="..\2048\Animation.cs">
       <Link>Animation.cs</Link>
     </Compile>
-    <Compile Include="..\2048\Cell.cs">
-      <Link>Cell.cs</Link>
-    </Compile>
     <Compile Include="..\2048\GameGrid.xaml.cs">
       <Link>GameGrid.xaml.cs</Link>
     </Compile>
-    <Compile Include="..\2048\GameModel.cs">
-      <Link>GameModel.cs</Link>
-    </Compile>
     <Compile Include="..\2048\GameTile.xaml.cs">
       <Link>GameTile.xaml.cs</Link>
+    </Compile>
+    <Compile Include="..\2048\Model\Cell.cs">
+      <Link>Cell.cs</Link>
+    </Compile>
+    <Compile Include="..\2048\Model\GameModel.cs">
+      <Link>GameModel.cs</Link>
     </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>

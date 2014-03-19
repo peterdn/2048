@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WP2048", "WP2048\WP2048.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2048.WPF", "2048.WPF\2048.WPF.csproj", "{6FE96390-1C33-4A5A-8899-B151B0609FC2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2048.Test", "2048.Test\2048.Test.csproj", "{DBB42E69-9287-4DA8-ACDE-69189387906A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,16 @@ Global
 		{6FE96390-1C33-4A5A-8899-B151B0609FC2}.Release|ARM.ActiveCfg = Release|Any CPU
 		{6FE96390-1C33-4A5A-8899-B151B0609FC2}.Release|x64.ActiveCfg = Release|Any CPU
 		{6FE96390-1C33-4A5A-8899-B151B0609FC2}.Release|x86.ActiveCfg = Release|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Release|ARM.ActiveCfg = Release|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Release|x64.ActiveCfg = Release|Any CPU
+		{DBB42E69-9287-4DA8-ACDE-69189387906A}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

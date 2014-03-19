@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Input;
+using _2048.Model;
 
 namespace _2048.WPF
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-
+using _2048.Model;
 #if NETFX_CORE
 using Windows.Foundation;
 using Windows.System;

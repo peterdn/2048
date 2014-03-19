@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using _2048;
+using _2048.Model;
 
 namespace WP2048
 {

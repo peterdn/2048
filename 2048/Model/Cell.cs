@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace _2048
+namespace _2048.Model
 {
     public class Cell
     {

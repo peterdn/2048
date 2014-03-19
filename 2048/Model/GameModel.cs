@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace _2048
+namespace _2048.Model
 {
     public enum MoveDirection
     {
