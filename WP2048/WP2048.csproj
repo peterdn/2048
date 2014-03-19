@@ -90,8 +90,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\2048\Animation.cs">
+      <Link>Animation.cs</Link>
+    </Compile>
     <Compile Include="..\2048\Cell.cs">
       <Link>Cell.cs</Link>
+    </Compile>
+    <Compile Include="..\2048\GameGrid.xaml.cs">
+      <Link>GameGrid.xaml.cs</Link>
     </Compile>
     <Compile Include="..\2048\GameModel.cs">
       <Link>GameModel.cs</Link>
@@ -118,6 +124,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </ApplicationDefinition>
+    <Page Include="..\2048\GameGrid.xaml">
+      <Link>GameGrid.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="..\2048\GameTile.xaml">
       <Link>GameTile.xaml</Link>
       <Generator>MSBuild:Compile</Generator>

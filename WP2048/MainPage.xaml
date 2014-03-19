@@ -13,12 +13,7 @@
     SupportedOrientations="Portrait" Orientation="Portrait"
     shell:SystemTray.IsVisible="True">
 
-
-    <Grid Background="#faf8ef">
-        <Border BorderThickness="10,10,10,10" BorderBrush="#776e65" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="5">
-            <Canvas Background="#776e65" Width="400" Height="400" Name="GameGrid">
-            </Canvas>
-        </Border>
+    <Grid Background="#faf8ef" Name="ContentGrid">
     </Grid>
 
 </phone:PhoneApplicationPage>

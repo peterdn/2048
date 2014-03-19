@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 #if NETFX_CORE
 using Windows.UI;
@@ -93,18 +92,18 @@ namespace _2048
 
         public void BeginNewTileAnimation()
         {
-            var scaleXAnimation = CreateDoubleAnimation(0.1, 1.0, 1200000);
-            var scaleYAnimation = CreateDoubleAnimation(0.1, 1.0, 1200000);
+            var scaleXAnimation = Animation.CreateDoubleAnimation(0.1, 1.0, 1200000);
+            var scaleYAnimation = Animation.CreateDoubleAnimation(0.1, 1.0, 1200000);
 
             Storyboard.SetTarget(scaleXAnimation, TileBorder);
             Storyboard.SetTargetName(scaleXAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleXAnimation, CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
+            Storyboard.SetTargetProperty(scaleXAnimation, Animation.CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
 
             //((TransformGroup)RenderTransform).Children
 
             Storyboard.SetTarget(scaleYAnimation, TileBorder);
             Storyboard.SetTargetName(scaleYAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleYAnimation, CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"));
+            Storyboard.SetTargetProperty(scaleYAnimation, Animation.CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"));
 
             var storyboard = new Storyboard();
             storyboard.Children.Add(scaleXAnimation);
@@ -114,19 +113,19 @@ namespace _2048
 
         public void BeginDoubledAnimation()
         {
-            var scaleXAnimation = CreateDoubleAnimation(1.0, 1.2, 1200000);
+            var scaleXAnimation = Animation.CreateDoubleAnimation(1.0, 1.2, 1200000);
             scaleXAnimation.AutoReverse = true;
 
-            var scaleYAnimation = CreateDoubleAnimation(1.0, 1.2, 1200000);
+            var scaleYAnimation = Animation.CreateDoubleAnimation(1.0, 1.2, 1200000);
             scaleYAnimation.AutoReverse = true;
 
             Storyboard.SetTarget(scaleXAnimation, TileBorder);
             Storyboard.SetTargetName(scaleXAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleXAnimation, CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
+            Storyboard.SetTargetProperty(scaleXAnimation, Animation.CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"));
 
             Storyboard.SetTarget(scaleYAnimation, TileBorder);
             Storyboard.SetTargetName(scaleYAnimation, "AnimatedScaleTransform");
-            Storyboard.SetTargetProperty(scaleYAnimation, CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"));
+            Storyboard.SetTargetProperty(scaleYAnimation, Animation.CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"));
 
             var storyboard = new Storyboard();
             storyboard.Children.Add(scaleXAnimation);
@@ -135,30 +134,6 @@ namespace _2048
             storyboard.Completed += (Sender, O) => SetValue(Canvas.ZIndexProperty, 0);
 
             storyboard.Begin();
-        }
-
-#if NETFX_CORE
-        private string CreatePropertyPath(string PropertyPath)
-        {
-            return PropertyPath;
-        }
-#elif WINDOWS_PHONE
-        private static PropertyPath CreatePropertyPath(string PropertyPath)
-        {
-            return new PropertyPath(PropertyPath);
-        }
-#endif
-
-        private static DoubleAnimation CreateDoubleAnimation(double? From, double? To, long DurationTicks)
-        {
-            var animation = new DoubleAnimation();
-            animation.From = From;
-            animation.To = To;
-            animation.Duration = new Duration(new TimeSpan(DurationTicks));
-#if NETFX_CORE
-            animation.EnableDependentAnimation = true;
-#endif
-            return animation;
         }
     }
 }
