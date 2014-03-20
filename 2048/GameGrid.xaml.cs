@@ -104,15 +104,18 @@ namespace _2048
 
         private void UpdateUI()
         {
-            // Set to 0 any underlying tile where MovedFrom != null && !WasDoubled OR newValue == 0
-            for (var y = 0; y < _ROWS; ++y)
+            foreach (var cell in _gameModel.CellsIterator())
             {
-                for (var x = 0; x < _COLS; ++x)
+                _underlyingTiles[cell.X][cell.Y].StopAnimations();
+            }
+
+            // Set to 0 any underlying tile where MovedFrom != null && !WasDoubled OR newValue == 0
+            
+            foreach (var cell in _gameModel.CellsIterator())
+            {
+                if ((cell.PreviousPosition != null && !cell.WasMerged) || cell.Value == 0 || cell.WasCreated)
                 {
-                    if ((_gameModel.Cells[x][y].PreviousPosition != null && !_gameModel.Cells[x][y].WasMerged) || _gameModel.Cells[x][y].Value == 0 || _gameModel.Cells[x][y].WasCreated)
-                    {
-                        _underlyingTiles[x][y].Value = 0;
-                    }
+                    _underlyingTiles[cell.X][cell.Y].Value = 0;
                 }
             }
 

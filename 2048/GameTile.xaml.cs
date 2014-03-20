@@ -90,6 +90,7 @@ namespace _2048
             this.y = y;
         }
 
+        private Storyboard _newTileStoryboard = new Storyboard();
         public void BeginNewTileAnimation()
         {
             var scaleXAnimation = Animation.CreateDoubleAnimation(0.1, 1.0, 1200000);
@@ -105,12 +106,13 @@ namespace _2048
             Storyboard.SetTargetName(scaleYAnimation, "AnimatedScaleTransform");
             Storyboard.SetTargetProperty(scaleYAnimation, Animation.CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"));
 
-            var storyboard = new Storyboard();
-            storyboard.Children.Add(scaleXAnimation);
-            storyboard.Children.Add(scaleYAnimation);
-            storyboard.Begin();
+            _newTileStoryboard.Children.Clear();
+            _newTileStoryboard.Children.Add(scaleXAnimation);
+            _newTileStoryboard.Children.Add(scaleYAnimation);
+            _newTileStoryboard.Begin();
         }
 
+        private Storyboard _doubledStoryboard = new Storyboard();
         public void BeginDoubledAnimation()
         {
             var scaleXAnimation = Animation.CreateDoubleAnimation(1.0, 1.2, 1200000);
@@ -127,13 +129,20 @@ namespace _2048
             Storyboard.SetTargetName(scaleYAnimation, "AnimatedScaleTransform");
             Storyboard.SetTargetProperty(scaleYAnimation, Animation.CreatePropertyPath("(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"));
 
-            var storyboard = new Storyboard();
-            storyboard.Children.Add(scaleXAnimation);
-            storyboard.Children.Add(scaleYAnimation);
+            _doubledStoryboard.Children.Clear();
+            _doubledStoryboard.Children.Add(scaleXAnimation);
+            _doubledStoryboard.Children.Add(scaleYAnimation);
 
-            storyboard.Completed += (Sender, O) => SetValue(Canvas.ZIndexProperty, 0);
+            _doubledStoryboard.Completed += (Sender, O) => SetValue(Canvas.ZIndexProperty, 0);
 
-            storyboard.Begin();
+            _doubledStoryboard.Begin();
+        }
+
+        public void StopAnimations()
+        {
+            _newTileStoryboard.Stop();
+            _doubledStoryboard.Stop();
+            SetValue(Canvas.ZIndexProperty, 0);
         }
     }
 }
