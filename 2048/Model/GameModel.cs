@@ -14,6 +14,8 @@ namespace _2048.Model
 
     public class GameModel
     {
+        public int Score { get; private set; }
+        
         public int RowCount { get; private set; }
         public int ColumnCount { get; private set; }
 
@@ -34,20 +36,8 @@ namespace _2048.Model
         {
             this.RowCount = RowCount;
             this.ColumnCount = ColumnCount;
-
-            Cells = new Cell[this.ColumnCount][];
-            for (int i = 0; i < this.ColumnCount; ++i)
-            {
-                Cells[i] = new Cell[this.RowCount];
-            }
-
-            for (int y = 0; y < this.RowCount; ++y)
-            {
-                for (int x = 0; x < this.ColumnCount; ++x)
-                {
-                    Cells[x][y] = new Cell(x, y);
-                }
-            }
+            
+            this.Reset();
         }
 
         public bool PerformMove(MoveDirection Direction)
@@ -218,6 +208,28 @@ namespace _2048.Model
                 DestinationCell.PreviousPosition = SourceCell.PreviousPosition ?? new Coordinate(SourceCell.X, SourceCell.Y);
                 SourceCell.Value = 0;
                 SourceCell.PreviousPosition = null;
+
+                // Update the score
+                Score += DestinationCell.Value;
+            }
+        }
+
+        public void Reset()
+        {
+            this.Score = 0;
+
+            Cells = new Cell[this.ColumnCount][];
+            for (int i = 0; i < this.ColumnCount; ++i)
+            {
+                Cells[i] = new Cell[this.RowCount];
+            }
+
+            for (int y = 0; y < this.RowCount; ++y)
+            {
+                for (int x = 0; x < this.ColumnCount; ++x)
+                {
+                    Cells[x][y] = new Cell(x, y);
+                }
             }
         }
 

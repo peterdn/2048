@@ -36,6 +36,7 @@ namespace _2048.Test
                 new[] {2, 0, 0, 0},
                 new[] {2, 0, 0, 0}
             }));
+            Assert.IsTrue(_gameModel.Score == 0);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Down);
@@ -46,6 +47,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 2},
                 new[] {0, 0, 0, 2}
             }));
+            Assert.IsTrue(_gameModel.Score == 0);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Left);
@@ -56,6 +58,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0}
             }));
+            Assert.IsTrue(_gameModel.Score == 4);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Right);
@@ -66,6 +69,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 4, 0}
             }));
+            Assert.IsTrue(_gameModel.Score == 4);
         }
 
         [TestMethod]
@@ -88,6 +92,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {4, 2, 0, 0}
             }));
+            Assert.IsTrue(_gameModel.Score == 4);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Down);
@@ -98,6 +103,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 4, 2}
             }));
+            Assert.IsTrue(_gameModel.Score == 4);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Left);
@@ -108,6 +114,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0}
             }));
+            Assert.IsTrue(_gameModel.Score == 12);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Right);
@@ -118,6 +125,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {2, 8, 4, 4}
             }));
+            Assert.IsTrue(_gameModel.Score == 12);
         }
 
         [TestMethod]
@@ -140,6 +148,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {32, 0, 0, 0}
             }));
+            Assert.IsTrue(_gameModel.Score == 64);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Down);
@@ -150,6 +159,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 32}
             }));
+            Assert.IsTrue(_gameModel.Score == 64);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Left);
@@ -160,6 +170,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {0, 0, 0, 0}
             }));
+            Assert.IsTrue(_gameModel.Score == 64);
 
             SetCells(cells);
             _gameModel.PerformMove(MoveDirection.Right);
@@ -170,6 +181,7 @@ namespace _2048.Test
                 new[] {0, 0, 0, 0},
                 new[] {32, 0, 0, 32}
             }));
+            Assert.IsTrue(_gameModel.Score == 64);
         }
 
         [TestMethod]
@@ -222,6 +234,7 @@ namespace _2048.Test
                 new[] {4, 0, 0, 16},
                 new[] {64, 64, 32, 16}
             }));
+            Assert.IsTrue(_gameModel.Score == 116);
         }
 
         [TestMethod]
@@ -358,6 +371,7 @@ namespace _2048.Test
 
         private void SetCells(int[][] Cells)
         {
+            _gameModel.Reset();
             for (var x = 0; x < _COLS; ++x)
             {
                 for (var y = 0; y < _ROWS; ++y)
