@@ -105,6 +105,9 @@
     <Compile Include="..\2048\Model\GameModel.cs">
       <Link>GameModel.cs</Link>
     </Compile>
+    <Compile Include="..\2048\ScoreCard.xaml.cs">
+      <Link>ScoreCard.xaml.cs</Link>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
@@ -131,6 +134,11 @@
     </Page>
     <Page Include="..\2048\GameTile.xaml">
       <Link>GameTile.xaml</Link>
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="..\2048\ScoreCard.xaml">
+      <Link>ScoreCard.xaml</Link>
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

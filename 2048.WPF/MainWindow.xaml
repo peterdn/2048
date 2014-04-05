@@ -3,6 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
 
-    <Grid Background="#faf8ef" Name="ContentGrid">
+    <Grid Background="#faf8ef" Name="ContentGrid" Grid.Row="1" Grid.Column="0">
     </Grid>
 </Window>

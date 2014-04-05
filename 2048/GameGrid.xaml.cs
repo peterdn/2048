@@ -25,6 +25,16 @@ namespace _2048
         private GameTile[][] _underlyingTiles;
         private GameModel _gameModel;
 
+        private ScoreCard _scoreCard;
+
+        public int Score
+        {
+            get
+            {
+                return _gameModel.Score;
+            }
+        }
+
         private double GetTileSize()
         {
             return GameCanvas.ActualWidth / _ROWS;
@@ -54,7 +64,15 @@ namespace _2048
                     GameCanvas.Children.Add(_underlyingTiles[x][y]);
                 }
             }
+            
+            _scoreCard = new ScoreCard();
+            _scoreCard.SetValue(Grid.RowProperty, 0);
+            _scoreCard.SetValue(Grid.ColumnProperty, 0);
+            ContentGrid.Children.Add(_scoreCard);
 
+            _scoreCard.Score = 0;
+            _scoreCard.Title = "SCORE";
+            
             StartGame();
         }
 
@@ -192,6 +210,9 @@ namespace _2048
                 }
 
                 _moveInProgress = false;
+
+                // Update the score
+                _scoreCard.Score = _gameModel.Score;
             };
 
             storyboard.Begin();
